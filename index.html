@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>同窓会 出席管理</title>
+<link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header class="app-header">
+    <h1>同窓会 出席管理</h1>
+    <div id="connection-status" class="conn-status">接続中...</div>
+  </header>
+
+  <section class="summary" id="summary">
+    <div class="summary-card" data-status="未連絡"><span class="label">未連絡</span><span class="count" id="count-未連絡">0</span></div>
+    <div class="summary-card" data-status="連絡済"><span class="label">連絡済</span><span class="count" id="count-連絡済">0</span></div>
+    <div class="summary-card" data-status="検討中"><span class="label">検討中</span><span class="count" id="count-検討中">0</span></div>
+    <div class="summary-card" data-status="出席"><span class="label">出席</span><span class="count" id="count-出席">0</span></div>
+    <div class="summary-card" data-status="欠席"><span class="label">欠席</span><span class="count" id="count-欠席">0</span></div>
+    <div class="summary-card total"><span class="label">合計</span><span class="count" id="count-total">0</span></div>
+  </section>
+
+  <section class="controls">
+    <button id="open-add" class="btn-primary">+ 新規追加</button>
+    <input type="text" id="filter-text" placeholder="名前・担当者で絞り込み" />
+    <select id="filter-status">
+      <option value="">すべての状況</option>
+      <option value="未連絡">未連絡</option>
+      <option value="連絡済">連絡済</option>
+      <option value="検討中">検討中</option>
+      <option value="出席">出席</option>
+      <option value="欠席">欠席</option>
+    </select>
+    <select id="filter-owner">
+      <option value="">すべての担当者</option>
+    </select>
+  </section>
+
+  <main>
+    <ul id="member-list" class="member-list"></ul>
+    <p id="empty-message" class="empty hidden">該当する人がいません</p>
+  </main>
+
+  <!-- 追加/編集モーダル -->
+  <div id="modal" class="modal hidden">
+    <div class="modal-content">
+      <h2 id="modal-title">新規追加</h2>
+      <label>名前
+        <input type="text" id="input-name" placeholder="例: 山田 太郎" autocomplete="off" />
+      </label>
+      <label>担当者
+        <input type="text" id="input-owner" placeholder="例: 鈴木" autocomplete="off" list="owner-suggestions" />
+        <datalist id="owner-suggestions"></datalist>
+      </label>
+      <label>集客状況
+        <select id="input-status">
+          <option value="未連絡">未連絡</option>
+          <option value="連絡済">連絡済</option>
+          <option value="検討中">検討中</option>
+          <option value="出席">出席</option>
+          <option value="欠席">欠席</option>
+        </select>
+      </label>
+      <label>メモ (任意)
+        <textarea id="input-note" rows="2" placeholder="連絡手段・コメントなど"></textarea>
+      </label>
+      <div class="modal-actions">
+        <button id="modal-delete" class="btn-danger hidden">削除</button>
+        <div class="spacer"></div>
+        <button id="modal-cancel" class="btn-secondary">キャンセル</button>
+        <button id="modal-save" class="btn-primary">保存</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Firebase (CDN, ES Modules) -->
+  <script type="module" src="app.js"></script>
+</body>
+</html>
