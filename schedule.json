@@ -1,0 +1,45 @@
+{
+  "area": "西宮市 学文殿町",
+  "note": "西宮市公式『ごみカレンダー』で確認のうえ修正してください。",
+  "rules": [
+    {
+      "name": "燃やすごみ",
+      "type": "weekly",
+      "days": [
+        "mon",
+        "thu"
+      ]
+    },
+    {
+      "name": "プラスチック (青袋)",
+      "type": "weekly",
+      "days": [
+        "tue"
+      ]
+    },
+    {
+      "name": "ペットボトル",
+      "type": "weekly",
+      "days": [
+        "fri"
+      ]
+    },
+    {
+      "name": "缶・びん",
+      "type": "biweekly",
+      "days": [
+        "wed"
+      ],
+      "reference_date": "2026-04-08"
+    },
+    {
+      "name": "紙・布",
+      "type": "biweekly",
+      "days": [
+        "wed"
+      ],
+      "reference_date": "2026-04-15"
+    }
+  ],
+  "holidays": []
+}
