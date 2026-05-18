@@ -1,26 +1,6 @@
-// 同窓会出席管理 — Firebase Firestore でリアルタイム同期
-// firebase-config.js から設定を読み込みます（README 参照）
-import { firebaseConfig } from "./firebase-config.js";
-
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import {
-  getFirestore,
-  collection,
-  onSnapshot,
-  addDoc,
-  updateDoc,
-  deleteDoc,
-  doc,
-  query,
-  orderBy,
-  serverTimestamp,
-} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+// 同窓会出席管理 — Turso バックエンドへの API + SSE クライアント
 
 const STATUSES = ["未連絡", "連絡済", "検討中", "出席", "欠席"];
-
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
-const membersCol = collection(db, "members");
 
 const state = {
   members: [],
@@ -31,6 +11,13 @@ const state = {
 };
 
 // --- DOM refs ---
+const loginScreen = document.getElementById("login-screen");
+const appScreen = document.getElementById("app-screen");
+const loginForm = document.getElementById("login-form");
+const loginPassword = document.getElementById("login-password");
+const loginError = document.getElementById("login-error");
+const logoutBtn = document.getElementById("logout-btn");
+
 const listEl = document.getElementById("member-list");
 const emptyEl = document.getElementById("empty-message");
 const filterTextEl = document.getElementById("filter-text");
@@ -50,28 +37,118 @@ const btnSave = document.getElementById("modal-save");
 const btnCancel = document.getElementById("modal-cancel");
 const btnDelete = document.getElementById("modal-delete");
 
-// --- Firestore subscription (realtime) ---
-const q = query(membersCol, orderBy("createdAt", "asc"));
-onSnapshot(
-  q,
-  (snap) => {
-    state.members = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+let eventSource = null;
+
+// --- 初期化 ---
+init();
+
+async function init() {
+  const me = await fetch("/api/me").then((r) => r.json()).catch(() => ({ authenticated: false }));
+  if (me.authenticated) {
+    await enterApp();
+  } else {
+    showLogin();
+  }
+}
+
+function showLogin() {
+  appScreen.classList.add("hidden");
+  loginScreen.classList.remove("hidden");
+  setTimeout(() => loginPassword.focus(), 50);
+}
+
+async function enterApp() {
+  loginScreen.classList.add("hidden");
+  appScreen.classList.remove("hidden");
+  await loadMembers();
+  subscribeEvents();
+}
+
+// --- ログイン ---
+loginForm.addEventListener("submit", async (e) => {
+  e.preventDefault();
+  loginError.classList.add("hidden");
+  try {
+    const res = await fetch("/api/login", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ password: loginPassword.value }),
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      loginError.textContent = err.error || "ログインに失敗しました";
+      loginError.classList.remove("hidden");
+      return;
+    }
+    loginPassword.value = "";
+    await enterApp();
+  } catch (err) {
+    loginError.textContent = "通信エラー: " + err.message;
+    loginError.classList.remove("hidden");
+  }
+});
+
+logoutBtn.addEventListener("click", async () => {
+  await fetch("/api/logout", { method: "POST" });
+  if (eventSource) {
+    eventSource.close();
+    eventSource = null;
+  }
+  state.members = [];
+  showLogin();
+});
+
+// --- データ取得 ---
+async function loadMembers() {
+  try {
+    const res = await fetch("/api/members");
+    if (res.status === 401) return showLogin();
+    const data = await res.json();
+    state.members = data.members || [];
+    render();
+  } catch (err) {
+    console.error(err);
+  }
+}
+
+// --- SSE 購読 ---
+function subscribeEvents() {
+  if (eventSource) eventSource.close();
+  eventSource = new EventSource("/api/events");
+  eventSource.onopen = () => {
     connStatusEl.textContent = "● オンライン";
     connStatusEl.classList.add("online");
     connStatusEl.classList.remove("offline");
-    render();
-  },
-  (err) => {
-    console.error(err);
+  };
+  eventSource.onerror = () => {
     connStatusEl.textContent = "● オフライン";
     connStatusEl.classList.add("offline");
     connStatusEl.classList.remove("online");
-  }
-);
+  };
+  eventSource.onmessage = (ev) => {
+    try {
+      const msg = JSON.parse(ev.data);
+      applyEvent(msg);
+    } catch {}
+  };
+}
 
-// --- Render ---
+function applyEvent(msg) {
+  if (msg.type === "created") {
+    if (!state.members.some((m) => m.id === msg.member.id)) {
+      state.members.push(msg.member);
+    }
+  } else if (msg.type === "updated") {
+    const i = state.members.findIndex((m) => m.id === msg.member.id);
+    if (i >= 0) state.members[i] = { ...state.members[i], ...msg.member };
+  } else if (msg.type === "deleted") {
+    state.members = state.members.filter((m) => m.id !== msg.id);
+  }
+  render();
+}
+
+// --- レンダリング ---
 function render() {
-  // owner filter options
   const owners = [...new Set(state.members.map((m) => m.owner).filter(Boolean))].sort();
   const currentOwner = filterOwnerEl.value;
   filterOwnerEl.innerHTML =
@@ -79,10 +156,8 @@ function render() {
     owners.map((o) => `<option value="${escapeHtml(o)}">${escapeHtml(o)}</option>`).join("");
   filterOwnerEl.value = currentOwner;
 
-  // owner datalist
   ownerSuggestions.innerHTML = owners.map((o) => `<option value="${escapeHtml(o)}">`).join("");
 
-  // counts
   const counts = Object.fromEntries(STATUSES.map((s) => [s, 0]));
   state.members.forEach((m) => {
     if (counts[m.status] !== undefined) counts[m.status]++;
@@ -92,7 +167,6 @@ function render() {
   });
   document.getElementById("count-total").textContent = state.members.length;
 
-  // filter
   const text = state.filterText.trim().toLowerCase();
   const filtered = state.members.filter((m) => {
     if (state.filterStatus && m.status !== state.filterStatus) return false;
@@ -104,7 +178,6 @@ function render() {
     return true;
   });
 
-  // list
   listEl.innerHTML = filtered
     .map(
       (m) => `
@@ -123,7 +196,7 @@ function render() {
   emptyEl.classList.toggle("hidden", filtered.length > 0);
 }
 
-// --- Event handlers ---
+// --- フィルタ ---
 filterTextEl.addEventListener("input", (e) => {
   state.filterText = e.target.value;
   render();
@@ -162,19 +235,31 @@ btnSave.addEventListener("click", async () => {
     owner: inputOwner.value.trim(),
     status: inputStatus.value,
     note: inputNote.value.trim(),
-    updatedAt: serverTimestamp(),
   };
   btnSave.disabled = true;
   try {
+    let res;
     if (state.editingId) {
-      await updateDoc(doc(db, "members", state.editingId), payload);
+      res = await fetch(`/api/members/${state.editingId}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
     } else {
-      await addDoc(membersCol, { ...payload, createdAt: serverTimestamp() });
+      res = await fetch("/api/members", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+    }
+    if (res.status === 401) return showLogin();
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.error || "保存に失敗しました");
     }
     closeModal();
   } catch (err) {
-    console.error(err);
-    alert("保存に失敗しました: " + err.message);
+    alert(err.message);
   } finally {
     btnSave.disabled = false;
   }
@@ -184,11 +269,15 @@ btnDelete.addEventListener("click", async () => {
   if (!state.editingId) return;
   if (!confirm("削除します。よろしいですか？")) return;
   try {
-    await deleteDoc(doc(db, "members", state.editingId));
+    const res = await fetch(`/api/members/${state.editingId}`, { method: "DELETE" });
+    if (res.status === 401) return showLogin();
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.error || "削除に失敗しました");
+    }
     closeModal();
   } catch (err) {
-    console.error(err);
-    alert("削除に失敗しました: " + err.message);
+    alert(err.message);
   }
 });
 
@@ -196,7 +285,6 @@ document.addEventListener("keydown", (e) => {
   if (e.key === "Escape" && !modal.classList.contains("hidden")) closeModal();
 });
 
-// --- Modal helpers ---
 function openModal(member) {
   if (member) {
     state.editingId = member.id;

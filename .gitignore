@@ -3,5 +3,11 @@ __pycache__/
 *.egg-info/
 .venv/
 
-# Firebase 個人設定（README の手順で各自作成）
-firebase-config.js
+# 環境変数 (Turso 接続情報 + パスワード)
+.env
+
+# Node.js
+node_modules/
+npm-debug.log
+yarn-error.log
+.DS_Store

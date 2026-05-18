@@ -36,6 +36,7 @@ body {
   gap: 8px;
 }
 .app-header h1 { margin: 0; font-size: 1.25rem; }
+.header-right { display: flex; gap: 12px; align-items: center; }
 .conn-status {
   font-size: 0.8rem;
   background: rgba(255,255,255,0.18);
@@ -44,6 +45,58 @@ body {
 }
 .conn-status.online { background: rgba(16, 185, 129, 0.9); }
 .conn-status.offline { background: rgba(239, 68, 68, 0.9); }
+.btn-link {
+  background: transparent;
+  color: white;
+  border: 1px solid rgba(255,255,255,0.4);
+  font-size: 0.85rem;
+  padding: 4px 12px;
+}
+.btn-link:hover { background: rgba(255,255,255,0.15); }
+
+/* Login screen */
+.login-screen {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: linear-gradient(135deg, #4f46e5 0%, #2563eb 100%);
+}
+.login-box {
+  background: white;
+  padding: 32px 28px;
+  border-radius: 12px;
+  width: 100%;
+  max-width: 360px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+}
+.login-box h1 {
+  margin: 0;
+  font-size: 1.25rem;
+  text-align: center;
+}
+.login-desc {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.9rem;
+  text-align: center;
+}
+.login-box input[type="password"] {
+  padding: 10px 12px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  font-size: 1rem;
+}
+.login-error {
+  margin: 0;
+  color: var(--danger);
+  font-size: 0.85rem;
+  text-align: center;
+}
 
 .summary {
   display: grid;
