@@ -1,0 +1,6 @@
+duckdb>=1.0
+folium>=0.15
+geopandas>=0.14
+numpy>=1.24
+pandas>=2.0
+requests>=2.31
