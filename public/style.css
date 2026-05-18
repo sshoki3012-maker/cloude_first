@@ -1,0 +1,269 @@
+:root {
+  --bg: #f6f7fb;
+  --card: #ffffff;
+  --text: #1f2330;
+  --muted: #6b7280;
+  --border: #e5e7eb;
+  --primary: #2563eb;
+  --primary-dark: #1d4ed8;
+  --danger: #dc2626;
+
+  --st-mi: #9ca3af;       /* 未連絡 */
+  --st-renraku: #3b82f6;  /* 連絡済 */
+  --st-kentou: #f59e0b;   /* 検討中 */
+  --st-shusseki: #10b981; /* 出席 */
+  --st-kesseki: #ef4444;  /* 欠席 */
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Hiragino Kaku Gothic ProN", "Yu Gothic", Meiryo, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.5;
+}
+
+.app-header {
+  background: linear-gradient(135deg, #4f46e5 0%, #2563eb 100%);
+  color: white;
+  padding: 16px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.app-header h1 { margin: 0; font-size: 1.25rem; }
+.header-right { display: flex; gap: 12px; align-items: center; }
+.conn-status {
+  font-size: 0.8rem;
+  background: rgba(255,255,255,0.18);
+  padding: 4px 10px;
+  border-radius: 999px;
+}
+.conn-status.online { background: rgba(16, 185, 129, 0.9); }
+.conn-status.offline { background: rgba(239, 68, 68, 0.9); }
+.btn-link {
+  background: transparent;
+  color: white;
+  border: 1px solid rgba(255,255,255,0.4);
+  font-size: 0.85rem;
+  padding: 4px 12px;
+}
+.btn-link:hover { background: rgba(255,255,255,0.15); }
+
+/* Login screen */
+.login-screen {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: linear-gradient(135deg, #4f46e5 0%, #2563eb 100%);
+}
+.login-box {
+  background: white;
+  padding: 32px 28px;
+  border-radius: 12px;
+  width: 100%;
+  max-width: 360px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+}
+.login-box h1 {
+  margin: 0;
+  font-size: 1.25rem;
+  text-align: center;
+}
+.login-desc {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.9rem;
+  text-align: center;
+}
+.login-box input[type="password"] {
+  padding: 10px 12px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  font-size: 1rem;
+}
+.login-error {
+  margin: 0;
+  color: var(--danger);
+  font-size: 0.85rem;
+  text-align: center;
+}
+
+.summary {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 8px;
+  padding: 12px 20px;
+}
+.summary-card {
+  background: var(--card);
+  padding: 10px 8px;
+  border-radius: 8px;
+  text-align: center;
+  border: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.summary-card .label { font-size: 0.75rem; color: var(--muted); }
+.summary-card .count { font-size: 1.5rem; font-weight: 700; }
+.summary-card[data-status="未連絡"] .count { color: var(--st-mi); }
+.summary-card[data-status="連絡済"] .count { color: var(--st-renraku); }
+.summary-card[data-status="検討中"] .count { color: var(--st-kentou); }
+.summary-card[data-status="出席"] .count { color: var(--st-shusseki); }
+.summary-card[data-status="欠席"] .count { color: var(--st-kesseki); }
+
+.controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 0 20px 12px;
+  align-items: center;
+}
+.controls input[type="text"],
+.controls select {
+  padding: 8px 10px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: white;
+  font-size: 0.95rem;
+}
+.controls input[type="text"] { flex: 1; min-width: 180px; }
+
+button {
+  cursor: pointer;
+  border: none;
+  border-radius: 6px;
+  padding: 8px 14px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  transition: filter 0.15s;
+}
+button:hover { filter: brightness(0.95); }
+.btn-primary { background: var(--primary); color: white; }
+.btn-primary:hover { background: var(--primary-dark); }
+.btn-secondary { background: #e5e7eb; color: var(--text); }
+.btn-danger { background: var(--danger); color: white; }
+
+main { padding: 0 20px 60px; }
+
+.member-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.member-item {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-left-width: 6px;
+  border-radius: 8px;
+  padding: 12px 14px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+  transition: box-shadow 0.15s, transform 0.05s;
+}
+.member-item:hover { box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+.member-item:active { transform: scale(0.998); }
+
+.member-item[data-status="未連絡"]   { border-left-color: var(--st-mi); }
+.member-item[data-status="連絡済"]   { border-left-color: var(--st-renraku); }
+.member-item[data-status="検討中"]   { border-left-color: var(--st-kentou); }
+.member-item[data-status="出席"]     { border-left-color: var(--st-shusseki); }
+.member-item[data-status="欠席"]     { border-left-color: var(--st-kesseki); }
+
+.member-main { flex: 1; min-width: 0; }
+.member-name { font-weight: 700; font-size: 1.05rem; }
+.member-meta { font-size: 0.85rem; color: var(--muted); margin-top: 2px; }
+.member-note { font-size: 0.85rem; color: #4b5563; margin-top: 4px; white-space: pre-wrap; word-break: break-word; }
+
+.badge {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: white;
+  white-space: nowrap;
+}
+.badge[data-status="未連絡"]   { background: var(--st-mi); }
+.badge[data-status="連絡済"]   { background: var(--st-renraku); }
+.badge[data-status="検討中"]   { background: var(--st-kentou); }
+.badge[data-status="出席"]     { background: var(--st-shusseki); }
+.badge[data-status="欠席"]     { background: var(--st-kesseki); }
+
+.empty {
+  text-align: center;
+  color: var(--muted);
+  padding: 40px 0;
+}
+.hidden { display: none !important; }
+
+/* Modal */
+.modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  z-index: 1000;
+}
+.modal-content {
+  background: white;
+  border-radius: 12px;
+  padding: 20px;
+  max-width: 460px;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+.modal-content h2 { margin: 0 0 4px; font-size: 1.15rem; }
+.modal-content label {
+  display: flex;
+  flex-direction: column;
+  font-size: 0.85rem;
+  color: var(--muted);
+  gap: 4px;
+}
+.modal-content input,
+.modal-content select,
+.modal-content textarea {
+  padding: 8px 10px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  font-size: 1rem;
+  font-family: inherit;
+  color: var(--text);
+}
+.modal-actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  margin-top: 6px;
+}
+.modal-actions .spacer { flex: 1; }
+
+/* Mobile */
+@media (max-width: 600px) {
+  .summary { grid-template-columns: repeat(3, 1fr); }
+  .app-header h1 { font-size: 1.1rem; }
+  .controls input[type="text"] { width: 100%; }
+}
