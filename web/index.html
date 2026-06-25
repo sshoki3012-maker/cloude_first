@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+  <title>未来予想 投票 — ログイン</title>
+  <link rel="stylesheet" href="./css/style.css" />
+</head>
+<body>
+  <div class="wrap">
+    <h1>🔮 未来予想 投票</h1>
+    <p class="sub" id="event-label">同窓会の未来予想アンケート</p>
+
+    <div class="card">
+      <p>まず、あなたの名前を選んでください。</p>
+      <label class="fld">
+        <span>名前で検索</span>
+        <input id="search" type="search" placeholder="名前を入力…" autocomplete="off" />
+      </label>
+      <label class="fld">
+        <span>名簿から選択</span>
+        <select id="name-select" size="8"></select>
+      </label>
+      <div class="row">
+        <button id="enter" disabled>この名前で始める →</button>
+      </div>
+    </div>
+
+    <p class="sub" id="known"></p>
+  </div>
+
+  <div class="toast" id="toast"></div>
+  <script type="module" src="./js/identify.js"></script>
+</body>
+</html>

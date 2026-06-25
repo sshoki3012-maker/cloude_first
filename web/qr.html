@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>未来予想 投票QR</title>
+  <link rel="stylesheet" href="./css/style.css" />
+  <style>
+    .qr-box { text-align: center; padding: 24px; }
+    #qr { background: #fff; display: inline-block; padding: 20px; border-radius: 20px; }
+    .url { word-break: break-all; font-size: 1.1rem; margin-top: 16px; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>📱 投票はこちらから</h1>
+    <p class="sub">スマホのカメラでQRを読み取ってください</p>
+    <div class="card qr-box">
+      <div id="qr"></div>
+      <div class="url muted" id="url"></div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/gh/davidshimjs/qrcodejs@master/qrcode.min.js"></script>
+  <script type="module">
+    import { VOTE_URL } from "./config.js";
+    const url = VOTE_URL || new URL("./index.html", location.href).href;
+    document.getElementById("url").textContent = url;
+    new QRCode(document.getElementById("qr"), {
+      text: url,
+      width: 320,
+      height: 320,
+      correctLevel: QRCode.CorrectLevel.M,
+    });
+  </script>
+</body>
+</html>

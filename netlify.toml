@@ -1,0 +1,11 @@
+# Netlify 設定 — ビルド不要の静的サイト。web/ をそのまま公開します。
+[build]
+  publish = "web"
+  command = ""
+
+# SPA ではないので特別なリダイレクトは不要。
+# 必要なら結果画面などへの短縮パスをここに追加できます。
+# [[redirects]]
+#   from = "/results"
+#   to = "/results.html"
+#   status = 200
