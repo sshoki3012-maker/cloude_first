@@ -3,8 +3,8 @@
 // =============================================================
 
 // Supabase ダッシュボード > Project Settings > API から取得
-export const SUPABASE_URL      = "https://YOUR-PROJECT.supabase.co";
-export const SUPABASE_ANON_KEY = "YOUR-ANON-PUBLIC-KEY";
+export const SUPABASE_URL      = "https://tpnuxzhmjyqzyilhyqcj.supabase.co";
+export const SUPABASE_ANON_KEY = "sb_publishable_TMANElHzpqayEt-dNgOFPQ_tGzSB8si";
 
 // イベント（年度）。supabase/seed.sql の event_id と必ず一致させる
 export const EVENT_ID = "2026";
@@ -19,7 +19,7 @@ export const RESULTS_TOP_N = 5;
 export const POLL_INTERVAL_MS = 3000;
 
 // 管理画面の簡易合言葉（余興用の軽い保護）
-export const ADMIN_PASSCODE = "change-me";
+export const ADMIN_PASSCODE = "nanpi32";
 
 // QR に埋め込む投票URL。空なら現在のドメイン + /index.html を使用
 export const VOTE_URL = "";
