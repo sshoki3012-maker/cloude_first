@@ -73,9 +73,11 @@ python3 -m http.server 8000
 ## データモデル
 - `participants` … 名簿（投票者でも候補でもある）
 - `awards` … お題/賞（`is_active` で表示切替）
-- `votes` … 投票（`event_id, voter_id, award_id, candidate_id`、1お題=最大3件）
+- `votes` … 投票（`event_id, voter_id, award_id, candidate_id, point`、1お題=最大3件）
+  - `point` … 選んだ順の配点（**1番目=3pt・2番目=2pt・3番目=1pt**）
 - `settings` … 年度ごとの受付状態（`voting_open`）
-- `vote_results`（ビュー）… お題×候補ごとの得票数
+- `vote_results`（ビュー）… お題×候補ごとの `votes`（得票数）と `points`（合計ポイント）。
+  結果画面は **`points` で傾斜配点ランキング**を表示
 
 ## お題・名簿の差し替え
 - `admin.html` から追加・編集・削除できます

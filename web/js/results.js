@@ -38,7 +38,7 @@ function renderTabs() {
 async function poll() {
   const { data, error } = await supabase
     .from("vote_results")
-    .select("award_id,candidate_id,votes")
+    .select("award_id,candidate_id,votes,points")
     .eq("event_id", EVENT_ID);
   if (error) {
     console.error(error);
@@ -58,10 +58,10 @@ function renderResult() {
 
   const rows = latest
     .filter((r) => r.award_id === award.id)
-    .sort((a, b) => b.votes - a.votes)
+    .sort((a, b) => b.points - a.points)
     .slice(0, RESULTS_TOP_N);
 
-  const max = rows.length ? rows[0].votes : 1;
+  const max = rows.length ? rows[0].points : 1;
 
   let html = `<div class="result-title">${award.title}</div>`;
   if (!rows.length) {
@@ -70,13 +70,13 @@ function renderResult() {
     html += `<div class="rank-list">`;
     rows.forEach((r, i) => {
       const name = participants.get(r.candidate_id) || "（不明）";
-      const pct = Math.round((r.votes / max) * 100);
+      const pct = Math.round((r.points / (max || 1)) * 100);
       html += `
         <div class="rank r${i + 1}">
           <div class="pos">${i + 1}</div>
           <div class="name">${name}</div>
           <div class="bar-wrap"><div class="bar" style="width:${pct}%"></div></div>
-          <div class="votes">${r.votes}<span style="font-size:1rem"> 票</span></div>
+          <div class="votes">${r.points}<span style="font-size:1rem"> pt</span></div>
         </div>`;
     });
     html += `</div>`;

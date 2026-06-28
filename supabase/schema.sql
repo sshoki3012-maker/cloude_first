@@ -34,21 +34,25 @@ create table if not exists settings (
 );
 
 -- 投票（1お題につき投票者あたり最大3件）
+-- point: 選んだ順の配点（1番目=3, 2番目=2, 3番目=1）
 create table if not exists votes (
   id            bigint generated always as identity primary key,
   event_id      text   not null,
   voter_id      bigint not null references participants(id) on delete cascade,
   award_id      bigint not null references awards(id)       on delete cascade,
   candidate_id  bigint not null references participants(id) on delete cascade,
+  point         int    not null default 0,
   created_at    timestamptz not null default now(),
   unique (event_id, voter_id, award_id, candidate_id)
 );
 
 create index if not exists idx_votes_event_award on votes (event_id, award_id);
 
--- 集計ビュー（お題×候補ごとの得票数）
+-- 集計ビュー（お題×候補ごとの得票数と合計ポイント）
 create or replace view vote_results as
-  select event_id, award_id, candidate_id, count(*)::int as votes
+  select event_id, award_id, candidate_id,
+         count(*)::int             as votes,
+         coalesce(sum(point), 0)::int as points
   from votes
   group by event_id, award_id, candidate_id;
 

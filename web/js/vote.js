@@ -18,8 +18,13 @@ if (!voter) location.href = "./index.html";
 let participants = [];
 let awards = [];
 let votingOpen = true;
-// award_id -> Set(candidate_id) 現在の選択
+// award_id -> [candidate_id, ...]  選んだ順の配列（先頭ほど高得点）
 const selections = new Map();
+// award_id -> カード要素（再描画用）
+const cardByAward = new Map();
+
+// 選んだ順位（0始まり）から配点を返す。1番目=MAX_PICKS点 … 最後=1点
+const pointForRank = (rank) => MAX_PICKS - rank;
 
 async function load() {
   $("#whoami").textContent = `${voter.name} さん`;
@@ -30,7 +35,7 @@ async function load() {
     supabase.from("awards").select("*").eq("is_active", true).order("sort_order"),
     supabase
       .from("votes")
-      .select("award_id,candidate_id")
+      .select("award_id,candidate_id,point")
       .eq("event_id", EVENT_ID)
       .eq("voter_id", voter.id),
   ]);
@@ -45,9 +50,15 @@ async function load() {
   participants = pplRes.data || [];
   awards = awardsRes.data || [];
 
+  // 既存投票を point の大きい順（=選んだ順）に並べて復元
+  const byAward = new Map();
   for (const v of votesRes.data || []) {
-    if (!selections.has(v.award_id)) selections.set(v.award_id, new Set());
-    selections.get(v.award_id).add(v.candidate_id);
+    if (!byAward.has(v.award_id)) byAward.set(v.award_id, []);
+    byAward.get(v.award_id).push(v);
+  }
+  for (const [awardId, rows] of byAward) {
+    rows.sort((a, b) => b.point - a.point);
+    selections.set(awardId, rows.map((r) => r.candidate_id));
   }
 
   if (!votingOpen) {
@@ -60,22 +71,21 @@ async function load() {
 function render() {
   const root = $("#awards");
   root.innerHTML = "";
+  cardByAward.clear();
 
   awards.forEach((award) => {
-    if (!selections.has(award.id)) selections.set(award.id, new Set());
-    const sel = selections.get(award.id);
+    if (!selections.has(award.id)) selections.set(award.id, []);
 
     const card = document.createElement("div");
     card.className = "card";
+    cardByAward.set(award.id, card);
 
     const head = document.createElement("div");
     head.className = "row";
     head.innerHTML = `
       <h2>${award.title}</h2>
       <div class="spacer"></div>
-      <span class="badge ${sel.size ? "done" : "todo"}" data-badge="${award.id}">
-        ${sel.size ? "投票済み" : "未投票"}
-      </span>`;
+      <span class="badge" data-badge="${award.id}"></span>`;
     card.appendChild(head);
 
     if (award.description) {
@@ -95,8 +105,10 @@ function render() {
     grid.className = "grid";
     participants.forEach((p) => {
       const chip = document.createElement("div");
-      chip.className = "chip" + (sel.has(p.id) ? " selected" : "");
-      chip.textContent = p.name;
+      chip.className = "chip";
+      chip.dataset.cid = p.id;
+      chip.innerHTML =
+        `<span class="chip-rank"></span><span class="chip-name">${p.name}</span>`;
       chip.addEventListener("click", () => toggle(award, p.id));
       grid.appendChild(chip);
     });
@@ -114,10 +126,9 @@ function render() {
     card.appendChild(actions);
 
     root.appendChild(card);
-    updateCount(award.id);
+    applySelection(award.id);
   });
 
-  // 投票締切時はチップ操作不可
   if (!votingOpen) {
     document.querySelectorAll(".chip").forEach((c) => c.classList.add("disabled"));
   }
@@ -125,44 +136,51 @@ function render() {
 
 function toggle(award, candidateId) {
   if (!votingOpen) return;
-  const sel = selections.get(award.id);
-  if (sel.has(candidateId)) {
-    sel.delete(candidateId);
+  const arr = selections.get(award.id);
+  const idx = arr.indexOf(candidateId);
+  if (idx >= 0) {
+    arr.splice(idx, 1); // 解除：以降の順位が繰り上がる
   } else {
-    if (sel.size >= MAX_PICKS) {
+    if (arr.length >= MAX_PICKS) {
       toast(`「${award.title}」は最大${MAX_PICKS}人までです`, true);
       return;
     }
-    sel.add(candidateId);
+    arr.push(candidateId); // 末尾に追加＝次の順位
   }
-  // 再描画は最小限：そのカードだけ更新
-  rerenderAward(award.id);
+  applySelection(award.id);
 }
 
-function rerenderAward(awardId) {
-  const sel = selections.get(awardId);
-  const award = awards.find((a) => a.id === awardId);
-  // チップの選択状態
-  const cards = document.querySelectorAll("#awards .card");
-  const idx = awards.indexOf(award);
-  const grid = cards[idx]?.querySelectorAll(".chip");
-  if (grid) {
-    participants.forEach((p, i) => {
-      grid[i].classList.toggle("selected", sel.has(p.id));
-    });
+// 1つの賞のチップ表示・順位バッジ・カウント・バッジを最新の選択に同期
+function applySelection(awardId) {
+  const arr = selections.get(awardId);
+  const card = cardByAward.get(awardId);
+  if (!card) return;
+
+  card.querySelectorAll(".chip").forEach((chip) => {
+    const cid = Number(chip.dataset.cid);
+    const rank = arr.indexOf(cid);
+    const rankEl = chip.querySelector(".chip-rank");
+    if (rank >= 0) {
+      chip.classList.add("selected");
+      rankEl.textContent = `${rank + 1}位 ・ ${pointForRank(rank)}pt`;
+    } else {
+      chip.classList.remove("selected");
+      rankEl.textContent = "";
+    }
+  });
+
+  const cnt = card.querySelector(`[data-count="${awardId}"]`);
+  if (cnt) {
+    cnt.textContent =
+      `選択中：${arr.length} / ${MAX_PICKS} 人` +
+      (arr.length ? `（タップした順に ${MAX_PICKS}pt→1pt）` : "");
   }
-  updateCount(awardId);
-  const badge = document.querySelector(`[data-badge="${awardId}"]`);
+
+  const badge = card.querySelector(`[data-badge="${awardId}"]`);
   if (badge) {
-    badge.className = `badge ${sel.size ? "done" : "todo"}`;
-    badge.textContent = sel.size ? "投票済み" : "未投票";
+    badge.className = `badge ${arr.length ? "done" : "todo"}`;
+    badge.textContent = arr.length ? "投票済み" : "未投票";
   }
-}
-
-function updateCount(awardId) {
-  const sel = selections.get(awardId);
-  const el = document.querySelector(`[data-count="${awardId}"]`);
-  if (el) el.textContent = `選択中：${sel.size} / ${MAX_PICKS} 人`;
 }
 
 async function saveAward(award, btn) {
@@ -171,7 +189,7 @@ async function saveAward(award, btn) {
   const original = btn.textContent;
   btn.textContent = "保存中…";
 
-  const candidates = [...selections.get(award.id)];
+  const ordered = selections.get(award.id);
 
   // delete → insert で「最新の選択」に置き換える
   const del = await supabase
@@ -189,12 +207,13 @@ async function saveAward(award, btn) {
     return;
   }
 
-  if (candidates.length) {
-    const rows = candidates.map((cid) => ({
+  if (ordered.length) {
+    const rows = ordered.map((cid, i) => ({
       event_id: EVENT_ID,
       voter_id: voter.id,
       award_id: award.id,
       candidate_id: cid,
+      point: pointForRank(i),
     }));
     const ins = await supabase.from("votes").insert(rows);
     if (ins.error) {
