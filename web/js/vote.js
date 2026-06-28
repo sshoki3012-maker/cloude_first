@@ -7,7 +7,7 @@ const STORAGE_KEY = `mirai_voter_${EVENT_ID}`;
 function toast(msg, isError = false) {
   const t = $("#toast");
   t.textContent = msg;
-  t.style.borderColor = isError ? "var(--accent)" : "var(--accent2)";
+  t.style.borderColor = isError ? "var(--bad)" : "var(--good)";
   t.classList.add("show");
   setTimeout(() => t.classList.remove("show"), 2400);
 }
