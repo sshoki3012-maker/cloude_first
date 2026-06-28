@@ -6,15 +6,15 @@
 <title>未来予想 投票｜投票者向け操作ガイド</title>
 <style>
   :root{
-    --bg:#0f1226; --card:#1a1f3a; --card2:#232a4d; --accent:#ff6b6b;
-    --accent2:#4dd4ac; --text:#f2f4ff; --muted:#9aa3c7; --gold:#ffd166;
+    --bg:#0b0a09; --card:#1a1410; --card2:#251c14; --accent:#ff7a18;
+    --accent2:#ffb02e; --text:#f7f1ea; --muted:#b6a896; --gold:#ffc24b;
   }
   *{box-sizing:border-box}
   body{margin:0;font-family:system-ui,-apple-system,"Hiragino Sans","Noto Sans JP",sans-serif;
-    background:radial-gradient(1200px 800px at 50% -10%,#20264f,var(--bg));color:var(--text);
+    background:radial-gradient(1100px 700px at 50% -10%,#3a230d,var(--bg));color:var(--text);
     min-height:100vh;overflow:hidden}
   .deck{height:100vh;display:flex;align-items:center;justify-content:center;padding:40px 24px 96px}
-  .slide{display:none;width:min(960px,100%);animation:fade .35s ease}
+  .slide{display:none;width:min(1180px,100%);animation:fade .35s ease}
   .slide.active{display:block}
   @keyframes fade{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
   .kicker{color:var(--accent2);font-weight:800;letter-spacing:.08em;font-size:.95rem;margin:0 0 8px}
@@ -28,10 +28,11 @@
   ol.steps li::before{content:counter(s);position:absolute;left:0;top:10px;width:36px;height:36px;
     background:var(--accent);color:#fff;font-weight:800;border-radius:50%;display:flex;align-items:center;justify-content:center}
   .pill{display:inline-block;padding:4px 12px;border-radius:999px;font-weight:800;font-size:1rem}
-  .pill.unsaved{background:var(--accent);color:#fff}
-  .pill.saved{background:#2e6e5b;color:#cdeee3}
-  .pill.gold{background:var(--gold);color:#3a2a00}
-  .pill.green{background:var(--accent2);color:#06241c}
+  /* 実際のアプリのボタン色を再現（赤=未保存 / 緑=保存済み・完了） */
+  .pill.unsaved{background:#ff5a5f;color:#fff}
+  .pill.saved{background:#2e8b6e;color:#eafff6}
+  .pill.gold{background:var(--gold);color:#3a2600}
+  .pill.green{background:#2e8b6e;color:#eafff6}
   .grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
   .big{font-size:1.5rem;font-weight:800}
   .note{color:var(--muted);font-size:1.05rem}
@@ -48,10 +49,13 @@
   .title-emoji{font-size:3.4rem}
   @media (max-width:640px){h1{font-size:1.9rem}h2{font-size:1.5rem}p,li{font-size:1.05rem}.grid2{grid-template-columns:1fr}}
   @media print{
+    @page{size:A4 landscape;margin:0}
     *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
     .nav{display:none}
-    .slide{display:block!important;opacity:1!important;animation:none!important;page-break-after:always;margin:0}
-    .deck{height:auto;display:block;padding:28px}
+    .slide{display:flex!important;flex-direction:column;justify-content:center;
+      width:100%;min-height:100vh;opacity:1!important;animation:none!important;
+      page-break-after:always;break-after:page;margin:0;padding:0 6vw}
+    .deck{height:auto;display:block;padding:0}
     body{overflow:visible}
   }
 </style>
