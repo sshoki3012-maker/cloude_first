@@ -37,8 +37,14 @@
 export const SUPABASE_URL      = "https://xxxx.supabase.co";
 export const SUPABASE_ANON_KEY = "eyJhbGci...";   // anon public key
 export const EVENT_ID          = "2026";          // seed.sql と一致させる
+export const VOTER_PASSCODE    = "入場の合言葉";   // 投票画面の入口で要求
 export const ADMIN_PASSCODE    = "好きな合言葉";   // 管理画面の保護
 ```
+
+> 投票画面（`index.html`）は最初に `VOTER_PASSCODE` の入力を求めます。管理用
+> （`ADMIN_PASSCODE`）とは別の合言葉です。一度入れた端末では `localStorage` に
+> 記録され再入力は不要。なお合言葉は `config.js`（公開ファイル）に平文で入るため、
+> ソースを見れば分かる「余興レベルの軽い入場制限」である点に注意してください。
 
 ### 3. ローカル確認
 ES Modules を使うので、ファイル直開きではなく簡易サーバ経由で：

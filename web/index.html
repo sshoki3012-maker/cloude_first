@@ -11,7 +11,20 @@
     <h1>🔮 未来予想 投票</h1>
     <p class="sub" id="event-label">同窓会の未来予想アンケート</p>
 
-    <div class="card">
+    <!-- 入場ゲート（合言葉） -->
+    <div class="card" id="gate">
+      <p>会場で配布された<b>合言葉</b>を入力してください。</p>
+      <label class="fld">
+        <span>合言葉</span>
+        <input id="voter-pass" type="password" placeholder="合言葉" autocomplete="off" />
+      </label>
+      <div class="row">
+        <button id="unlock">入場する →</button>
+      </div>
+    </div>
+
+    <!-- 名前選択（ゲート解除後に表示） -->
+    <div class="card" id="login" style="display:none">
       <p>まず、あなたの名前を選んでください。</p>
       <label class="fld">
         <span>名前で検索</span>

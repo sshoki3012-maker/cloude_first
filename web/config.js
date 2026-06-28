@@ -18,6 +18,9 @@ export const RESULTS_TOP_N = 5;
 // 結果スクリーンの自動更新間隔（ミリ秒）
 export const POLL_INTERVAL_MS = 3000;
 
+// 投票者の入場合言葉（投票画面の入口で要求。管理用とは別）
+export const VOTER_PASSCODE = "n0809";
+
 // 管理画面の簡易合言葉（余興用の軽い保護）
 export const ADMIN_PASSCODE = "nanpi32";
 

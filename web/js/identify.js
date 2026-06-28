@@ -1,8 +1,9 @@
 import { supabase } from "../lib/supabase.js";
-import { EVENT_ID } from "../config.js";
+import { EVENT_ID, VOTER_PASSCODE } from "../config.js";
 
 const $ = (s) => document.querySelector(s);
 const STORAGE_KEY = `mirai_voter_${EVENT_ID}`;
+const GATE_KEY = `mirai_gate_${EVENT_ID}`;
 
 function toast(msg) {
   const t = $("#toast");
@@ -12,6 +13,40 @@ function toast(msg) {
 }
 
 let participants = [];
+
+// ---- 入場ゲート（合言葉） ----
+function unlockGate() {
+  $("#gate").style.display = "none";
+  $("#login").style.display = "block";
+  // 既存ログインの案内はゲート解除後にだけ表示
+  const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || "null");
+  if (saved) {
+    $("#known").innerHTML =
+      `前回は <b>${saved.name}</b> として参加中。` +
+      ` <a href="./vote.html">投票へ進む →</a>`;
+  }
+}
+
+function setupGate() {
+  // 一度入場したらこの端末では再入力不要
+  if (localStorage.getItem(GATE_KEY) === "1") {
+    unlockGate();
+    return;
+  }
+  const tryUnlock = () => {
+    if ($("#voter-pass").value === VOTER_PASSCODE) {
+      localStorage.setItem(GATE_KEY, "1");
+      unlockGate();
+    } else {
+      toast("合言葉が違います");
+      $("#voter-pass").select();
+    }
+  };
+  $("#unlock").addEventListener("click", tryUnlock);
+  $("#voter-pass").addEventListener("keydown", (e) => {
+    if (e.key === "Enter") tryUnlock();
+  });
+}
 
 function render(filter = "") {
   const sel = $("#name-select");
@@ -29,13 +64,7 @@ function render(filter = "") {
 }
 
 async function init() {
-  // 既存ログインがあれば案内
-  const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || "null");
-  if (saved) {
-    $("#known").innerHTML =
-      `前回は <b>${saved.name}</b> として参加中。` +
-      ` <a href="./vote.html">投票へ進む →</a>`;
-  }
+  setupGate();
 
   const [{ data: settings }, { data: ppl, error }] = await Promise.all([
     supabase.from("settings").select("label").eq("event_id", EVENT_ID).maybeSingle(),
