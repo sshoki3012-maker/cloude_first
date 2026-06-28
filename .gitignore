@@ -2,3 +2,6 @@ __pycache__/
 *.py[cod]
 *.egg-info/
 .venv/
+
+# 生成物（HTMLから再生成可能なPDF）
+*.pdf

@@ -47,7 +47,13 @@
   .counter{color:var(--muted);font-weight:700}
   .title-emoji{font-size:3.4rem}
   @media (max-width:640px){h1{font-size:1.9rem}h2{font-size:1.5rem}p,li{font-size:1.05rem}.grid2{grid-template-columns:1fr}}
-  @media print{.nav{display:none}.slide{display:block!important;page-break-after:always;margin-bottom:40px}.deck{height:auto;display:block}body{overflow:visible}}
+  @media print{
+    *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+    .nav{display:none}
+    .slide{display:block!important;opacity:1!important;animation:none!important;page-break-after:always;margin:0}
+    .deck{height:auto;display:block;padding:28px}
+    body{overflow:visible}
+  }
 </style>
 </head>
 <body>
