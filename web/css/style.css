@@ -1,7 +1,7 @@
 :root {
-  --bg: #ffffff;
-  --card: #fbf6f0;
-  --card2: #f3ece2;
+  --bg: #f1e7d6;       /* ベージュ（ベース） */
+  --card: #fdfaf5;     /* カードはやや明るくして地と区別 */
+  --card2: #ece1cf;    /* チップ／タブ等のサブ面 */
   --accent: #f26a1b;   /* オレンジ（ブランド／ボタン／選択） */
   --accent2: #c2410c;  /* 深いオレンジ（見出し補助／バー） */
   --good: #2e8b6e;     /* 緑：保存済み・完了 */
@@ -19,7 +19,7 @@
 body {
   margin: 0;
   font-family: system-ui, -apple-system, "Hiragino Sans", "Noto Sans JP", sans-serif;
-  background: radial-gradient(1200px 800px at 50% -10%, #fff1e2, var(--bg));
+  background: radial-gradient(1200px 800px at 50% -10%, #f8efdd, var(--bg));
   color: var(--text);
   min-height: 100vh;
 }
