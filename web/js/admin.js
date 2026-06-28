@@ -27,7 +27,37 @@ $("#pass").addEventListener("keydown", (e) => {
 
 // ---- 受付状態 ----
 async function refresh() {
-  await Promise.all([loadSettings(), loadAwards(), loadPeople()]);
+  await Promise.all([loadSettings(), loadStats(), loadAwards(), loadPeople()]);
+}
+
+// 投票完了状況：votes の voter_id から集計（DB変更なしで算出）
+async function loadStats() {
+  const [pplRes, awardsRes, votesRes] = await Promise.all([
+    supabase.from("participants").select("id"),
+    supabase.from("awards").select("id").eq("is_active", true),
+    supabase.from("votes").select("voter_id,award_id").eq("event_id", EVENT_ID),
+  ]);
+
+  const totalPeople = (pplRes.data || []).length;
+  const activeAwards = (awardsRes.data || []).length;
+  const votes = votesRes.data || [];
+
+  // 投票者ごとに、回答済みのお題数を集計
+  const awardsByVoter = new Map();
+  for (const v of votes) {
+    if (!awardsByVoter.has(v.voter_id)) awardsByVoter.set(v.voter_id, new Set());
+    awardsByVoter.get(v.voter_id).add(v.award_id);
+  }
+  const participated = awardsByVoter.size; // 1問以上投票した人数
+  let completed = 0; // 全お題に回答した人数
+  for (const set of awardsByVoter.values()) {
+    if (activeAwards > 0 && set.size >= activeAwards) completed++;
+  }
+
+  $("#stat-participated").textContent = `${totalPeople}人中 ${participated}人が投票`;
+  $("#stat-completed").textContent =
+    `全${activeAwards}問に回答済み：${completed}人` +
+    `（1問以上のみ：${participated - completed}人）`;
 }
 
 async function loadSettings() {
@@ -42,6 +72,8 @@ async function loadSettings() {
   b.className = "badge " + (open ? "done" : "closed");
   $("#toggle-open").dataset.open = open ? "1" : "0";
 }
+
+$("#refresh-stats").addEventListener("click", loadStats);
 
 $("#toggle-open").addEventListener("click", async () => {
   const next = $("#toggle-open").dataset.open !== "1";

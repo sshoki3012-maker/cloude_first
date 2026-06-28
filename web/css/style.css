@@ -100,8 +100,24 @@ label.fld span { display: block; color: var(--muted); font-size: .85rem; margin-
   font-size: .78rem; font-weight: 700;
 }
 .badge.done { background: var(--accent2); color: #06241c; }
-.badge.todo { background: #3a335a; color: var(--muted); }
+.badge.todo { background: var(--gold); color: #3a2a00; }
 .badge.closed { background: #5a2330; color: #ffb3bd; }
+
+/* お題カードの枠を投票状態で色分け（未投票を目立たせる） */
+.card.todo { border-color: rgba(255,209,102,.5); }
+.card.done { border-color: rgba(77,212,172,.45); }
+
+/* 全体進捗バー */
+.progress {
+  position: sticky; top: 0; z-index: 10;
+  background: var(--card2); border: 1px solid rgba(255,255,255,.1);
+  border-radius: 999px; padding: 10px 16px; margin: 0 0 16px;
+  font-weight: 800; text-align: center;
+}
+.progress.complete { background: #1d3b34; border-color: var(--accent2); color: #d6fff0; }
+
+/* お題ごとの名前検索ボックス */
+.award-search { margin: 10px 0; }
 
 .count { color: var(--muted); font-size: .85rem; }
 .toast {

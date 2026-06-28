@@ -101,18 +101,35 @@ function render() {
     cnt.dataset.count = award.id;
     card.appendChild(cnt);
 
+    // 名前で絞り込む検索ボックス（このお題の名簿だけを対象）
+    const search = document.createElement("input");
+    search.type = "search";
+    search.className = "award-search";
+    search.placeholder = "名前で絞り込む…";
+    search.autocomplete = "off";
+    card.appendChild(search);
+
     const grid = document.createElement("div");
     grid.className = "grid";
     participants.forEach((p) => {
       const chip = document.createElement("div");
       chip.className = "chip";
       chip.dataset.cid = p.id;
+      chip.dataset.name = p.name;
       chip.innerHTML =
         `<span class="chip-rank"></span><span class="chip-name">${p.name}</span>`;
       chip.addEventListener("click", () => toggle(award, p.id));
       grid.appendChild(chip);
     });
     card.appendChild(grid);
+
+    search.addEventListener("input", () => {
+      const q = search.value.trim();
+      grid.querySelectorAll(".chip").forEach((chip) => {
+        const hit = !q || chip.dataset.name.includes(q);
+        chip.style.display = hit ? "" : "none";
+      });
+    });
 
     const actions = document.createElement("div");
     actions.className = "row";
@@ -156,6 +173,9 @@ function applySelection(awardId) {
   const card = cardByAward.get(awardId);
   if (!card) return;
 
+  card.classList.toggle("done", arr.length > 0);
+  card.classList.toggle("todo", arr.length === 0);
+
   card.querySelectorAll(".chip").forEach((chip) => {
     const cid = Number(chip.dataset.cid);
     const rank = arr.indexOf(cid);
@@ -181,6 +201,18 @@ function applySelection(awardId) {
     badge.className = `badge ${arr.length ? "done" : "todo"}`;
     badge.textContent = arr.length ? "投票済み" : "未投票";
   }
+
+  updateProgress();
+}
+
+// 上部の全体進捗「N問中M問 投票済み」を更新
+function updateProgress() {
+  const el = $("#progress");
+  if (!el) return;
+  const total = awards.length;
+  const done = awards.filter((a) => (selections.get(a.id) || []).length > 0).length;
+  el.textContent = `${total}問中 ${done}問 投票済み`;
+  el.classList.toggle("complete", total > 0 && done === total);
 }
 
 async function saveAward(award, btn) {
