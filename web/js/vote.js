@@ -20,6 +20,8 @@ let awards = [];
 let votingOpen = true;
 // award_id -> [candidate_id, ...]  選んだ順の配列（先頭ほど高得点）
 const selections = new Map();
+// award_id -> bool  保存済みでロック中かどうか
+const locked = new Map();
 // award_id -> カード要素（再描画用）
 const cardByAward = new Map();
 
@@ -50,7 +52,8 @@ async function load() {
   participants = pplRes.data || [];
   awards = awardsRes.data || [];
 
-  // 既存投票を point の大きい順（=選んだ順）に並べて復元
+  // 既存投票を point の大きい順（=選んだ順）に並べて復元。
+  // 保存済みの賞は最初からロック状態にして誤操作を防ぐ。
   const byAward = new Map();
   for (const v of votesRes.data || []) {
     if (!byAward.has(v.award_id)) byAward.set(v.award_id, []);
@@ -59,6 +62,7 @@ async function load() {
   for (const [awardId, rows] of byAward) {
     rows.sort((a, b) => b.point - a.point);
     selections.set(awardId, rows.map((r) => r.candidate_id));
+    locked.set(awardId, true);
   }
 
   if (!votingOpen) {
@@ -82,10 +86,7 @@ function render() {
 
     const head = document.createElement("div");
     head.className = "row";
-    head.innerHTML = `
-      <h2>${award.title}</h2>
-      <div class="spacer"></div>
-      <span class="badge" data-badge="${award.id}"></span>`;
+    head.innerHTML = `<h2>${award.title}</h2>`;
     card.appendChild(head);
 
     if (award.description) {
@@ -131,28 +132,34 @@ function render() {
       });
     });
 
+    // 操作ボタン：保存（未保存/保存済み）と 変更
     const actions = document.createElement("div");
     actions.className = "row";
     actions.style.marginTop = "12px";
+
     const save = document.createElement("button");
-    save.textContent = "この賞を保存";
     save.dataset.save = award.id;
-    save.disabled = !votingOpen;
-    save.addEventListener("click", () => saveAward(award, save));
+    save.addEventListener("click", () => saveAward(award));
+
+    const edit = document.createElement("button");
+    edit.dataset.edit = award.id;
+    edit.className = "btn-ghost";
+    edit.textContent = "変更";
+    edit.addEventListener("click", () => editAward(award));
+
     actions.appendChild(save);
+    actions.appendChild(edit);
     card.appendChild(actions);
 
     root.appendChild(card);
     applySelection(award.id);
+    applyLock(award.id);
   });
-
-  if (!votingOpen) {
-    document.querySelectorAll(".chip").forEach((c) => c.classList.add("disabled"));
-  }
 }
 
 function toggle(award, candidateId) {
   if (!votingOpen) return;
+  if (locked.get(award.id)) return; // 保存済み（ロック中）は変更不可
   const arr = selections.get(award.id);
   const idx = arr.indexOf(candidateId);
   if (idx >= 0) {
@@ -167,14 +174,11 @@ function toggle(award, candidateId) {
   applySelection(award.id);
 }
 
-// 1つの賞のチップ表示・順位バッジ・カウント・バッジを最新の選択に同期
+// チップの選択表示（順位・配点バッジ）とカウントを同期
 function applySelection(awardId) {
   const arr = selections.get(awardId);
   const card = cardByAward.get(awardId);
   if (!card) return;
-
-  card.classList.toggle("done", arr.length > 0);
-  card.classList.toggle("todo", arr.length === 0);
 
   card.querySelectorAll(".chip").forEach((chip) => {
     const cid = Number(chip.dataset.cid);
@@ -195,12 +199,43 @@ function applySelection(awardId) {
       `選択中：${arr.length} / ${MAX_PICKS} 人` +
       (arr.length ? `（タップした順に ${MAX_PICKS}pt→1pt）` : "");
   }
+}
 
-  const badge = card.querySelector(`[data-badge="${awardId}"]`);
-  if (badge) {
-    badge.className = `badge ${arr.length ? "done" : "todo"}`;
-    badge.textContent = arr.length ? "投票済み" : "未投票";
+// ロック状態に応じてチップのロック・ボタン表示・枠色・進捗を同期
+function applyLock(awardId) {
+  const card = cardByAward.get(awardId);
+  if (!card) return;
+  const arr = selections.get(awardId);
+  const isLocked = locked.get(awardId) === true;
+
+  const grid = card.querySelector(".grid");
+  grid.classList.toggle("locked", isLocked || !votingOpen);
+
+  const saveBtn = card.querySelector("[data-save]");
+  const editBtn = card.querySelector("[data-edit]");
+
+  if (!votingOpen) {
+    saveBtn.textContent = "受付終了";
+    saveBtn.className = "btn-saved";
+    saveBtn.disabled = true;
+    editBtn.style.display = "none";
+  } else if (isLocked) {
+    saveBtn.textContent = "保存済み";
+    saveBtn.className = "btn-saved";
+    saveBtn.disabled = true;
+    editBtn.style.display = "";
+    editBtn.disabled = false;
+  } else {
+    saveBtn.textContent = "未保存（タップで保存）";
+    saveBtn.className = "btn-unsaved";
+    saveBtn.disabled = false;
+    editBtn.style.display = "none";
   }
+
+  // 「投票済み」= 保存済みかつ1人以上選択。枠色と進捗に反映
+  const done = isLocked && arr.length > 0;
+  card.classList.toggle("done", done);
+  card.classList.toggle("todo", !done);
 
   updateProgress();
 }
@@ -210,16 +245,29 @@ function updateProgress() {
   const el = $("#progress");
   if (!el) return;
   const total = awards.length;
-  const done = awards.filter((a) => (selections.get(a.id) || []).length > 0).length;
+  const done = awards.filter(
+    (a) => locked.get(a.id) === true && (selections.get(a.id) || []).length > 0
+  ).length;
   el.textContent = `${total}問中 ${done}問 投票済み`;
   el.classList.toggle("complete", total > 0 && done === total);
 }
 
-async function saveAward(award, btn) {
+// 「変更」：ロックを解除して選び直せる状態に戻す
+function editAward(award) {
   if (!votingOpen) return;
-  btn.disabled = true;
-  const original = btn.textContent;
-  btn.textContent = "保存中…";
+  locked.set(award.id, false);
+  applyLock(award.id);
+  toast(`「${award.title}」を選び直せます`);
+}
+
+async function saveAward(award) {
+  if (!votingOpen) return;
+  if (locked.get(award.id)) return;
+
+  const card = cardByAward.get(award.id);
+  const saveBtn = card.querySelector("[data-save]");
+  saveBtn.disabled = true;
+  saveBtn.textContent = "保存中…";
 
   const ordered = selections.get(award.id);
 
@@ -234,8 +282,7 @@ async function saveAward(award, btn) {
   if (del.error) {
     toast("保存に失敗しました（削除）", true);
     console.error(del.error);
-    btn.disabled = false;
-    btn.textContent = original;
+    applyLock(award.id); // 未保存状態へ戻す
     return;
   }
 
@@ -251,15 +298,14 @@ async function saveAward(award, btn) {
     if (ins.error) {
       toast("保存に失敗しました（受付が締め切られている可能性）", true);
       console.error(ins.error);
-      btn.disabled = false;
-      btn.textContent = original;
+      applyLock(award.id); // 未保存状態へ戻す
       return;
     }
   }
 
+  locked.set(award.id, true);
+  applyLock(award.id);
   toast(`「${award.title}」を保存しました`);
-  btn.disabled = false;
-  btn.textContent = original;
 }
 
 load();

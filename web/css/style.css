@@ -55,6 +55,14 @@ button:disabled { opacity: .45; cursor: not-allowed; }
 .btn-ghost { background: var(--card2); color: var(--text); }
 .btn-sm { padding: 8px 12px; font-size: .85rem; }
 
+/* 未保存（要保存）＝赤で目立たせる / 保存済み＝緑でグレーアウト */
+.btn-unsaved { background: var(--accent); color: #fff; }
+.btn-saved {
+  background: #2e6e5b; color: #cdeee3;
+  opacity: .6; cursor: default;
+}
+.btn-saved:disabled { opacity: .6; }
+
 input, select {
   font: inherit;
   width: 100%;
@@ -88,6 +96,11 @@ label.fld span { display: block; color: var(--muted); font-size: .85rem; margin-
 }
 .chip.selected { border-color: var(--accent2); background: #1d3b34; }
 .chip.disabled { opacity: .4; pointer-events: none; }
+
+/* 保存済み（ロック中）の名簿：操作不可。選択済みは見せ、未選択は薄く */
+.grid.locked { position: relative; }
+.grid.locked .chip { pointer-events: none; cursor: default; }
+.grid.locked .chip:not(.selected) { opacity: .45; }
 .chip-name { line-height: 1.2; }
 .chip-rank {
   font-size: .72rem; font-weight: 800; color: var(--gold);
