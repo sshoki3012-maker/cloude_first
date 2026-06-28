@@ -1,0 +1,160 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>未来予想 投票｜投票者向け操作ガイド</title>
+<style>
+  :root{
+    --bg:#0f1226; --card:#1a1f3a; --card2:#232a4d; --accent:#ff6b6b;
+    --accent2:#4dd4ac; --text:#f2f4ff; --muted:#9aa3c7; --gold:#ffd166;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:system-ui,-apple-system,"Hiragino Sans","Noto Sans JP",sans-serif;
+    background:radial-gradient(1200px 800px at 50% -10%,#20264f,var(--bg));color:var(--text);
+    min-height:100vh;overflow:hidden}
+  .deck{height:100vh;display:flex;align-items:center;justify-content:center;padding:40px 24px 96px}
+  .slide{display:none;width:min(960px,100%);animation:fade .35s ease}
+  .slide.active{display:block}
+  @keyframes fade{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+  .kicker{color:var(--accent2);font-weight:800;letter-spacing:.08em;font-size:.95rem;margin:0 0 8px}
+  h1{font-size:2.6rem;line-height:1.2;margin:0 0 12px}
+  h2{font-size:2rem;line-height:1.25;margin:0 0 18px}
+  p,li{font-size:1.25rem;line-height:1.6}
+  .lead{color:var(--muted);font-size:1.3rem}
+  .card{background:var(--card);border:1px solid rgba(255,255,255,.07);border-radius:18px;padding:22px 26px;margin:14px 0}
+  ol.steps{margin:0;padding-left:0;list-style:none;counter-reset:s}
+  ol.steps li{counter-increment:s;position:relative;padding:12px 0 12px 56px}
+  ol.steps li::before{content:counter(s);position:absolute;left:0;top:10px;width:36px;height:36px;
+    background:var(--accent);color:#fff;font-weight:800;border-radius:50%;display:flex;align-items:center;justify-content:center}
+  .pill{display:inline-block;padding:4px 12px;border-radius:999px;font-weight:800;font-size:1rem}
+  .pill.unsaved{background:var(--accent);color:#fff}
+  .pill.saved{background:#2e6e5b;color:#cdeee3}
+  .pill.gold{background:var(--gold);color:#3a2a00}
+  .pill.green{background:var(--accent2);color:#06241c}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  .big{font-size:1.5rem;font-weight:800}
+  .note{color:var(--muted);font-size:1.05rem}
+  .pts{display:flex;gap:10px;flex-wrap:wrap;margin-top:10px}
+  .pts span{background:var(--card2);border-radius:12px;padding:10px 16px;font-weight:800}
+  .nav{position:fixed;left:0;right:0;bottom:0;height:72px;display:flex;align-items:center;gap:16px;
+    padding:0 24px;background:rgba(15,18,38,.7);backdrop-filter:blur(8px);border-top:1px solid rgba(255,255,255,.08)}
+  .nav button{font:inherit;font-weight:800;border:none;border-radius:12px;padding:10px 18px;background:var(--card2);color:var(--text);cursor:pointer}
+  .nav .spacer{flex:1}
+  .dots{display:flex;gap:8px}
+  .dot{width:10px;height:10px;border-radius:50%;background:var(--card2);cursor:pointer}
+  .dot.active{background:var(--accent2)}
+  .counter{color:var(--muted);font-weight:700}
+  .title-emoji{font-size:3.4rem}
+  @media (max-width:640px){h1{font-size:1.9rem}h2{font-size:1.5rem}p,li{font-size:1.05rem}.grid2{grid-template-columns:1fr}}
+  @media print{.nav{display:none}.slide{display:block!important;page-break-after:always;margin-bottom:40px}.deck{height:auto;display:block}body{overflow:visible}}
+</style>
+</head>
+<body>
+<div class="deck">
+
+  <!-- 1 -->
+  <section class="slide active">
+    <div class="title-emoji">🔮📱</div>
+    <p class="kicker">投票者向け 操作ガイド</p>
+    <h1>同窓会「未来予想」投票<br>スマホでの参加方法</h1>
+    <p class="lead">数年後に「○○してそうな人」をみんなで予想して投票します。<br>
+      所要 約5分。スマホだけでOK。順番に進めば迷いません。</p>
+    <div class="card note">このガイドは投影用です。矢印キー（← →）またはタップで進みます。</div>
+  </section>
+
+  <!-- 2 -->
+  <section class="slide">
+    <p class="kicker">STEP 1 / 入場とログイン</p>
+    <h2>QR → 合言葉 → 名前えらび</h2>
+    <ol class="steps">
+      <li>配布された<b>QRコード</b>をスマホのカメラで読み取る</li>
+      <li>最初の画面で<b>合言葉</b>を入力（会場で案内されたもの）</li>
+      <li>名簿から<b>自分の名前</b>を選んで「始める」<br>
+        <span class="note">検索欄に名前を入れると早く見つかります</span></li>
+    </ol>
+    <div class="card note">同じスマホなら次回から合言葉・名前の再入力は不要です。
+      別人の名前を選ばないよう注意してください（誰の予想かの記録になります）。</div>
+  </section>
+
+  <!-- 3 -->
+  <section class="slide">
+    <p class="kicker">STEP 2 / 投票のしかた</p>
+    <h2>お題ごとに最大3人。<br>タップした順で点数が変わります</h2>
+    <div class="card">
+      <p class="big">選んだ順に配点（傾斜配点）</p>
+      <div class="pts"><span>1番目にタップ＝3pt</span><span>2番目＝2pt</span><span>3番目＝1pt</span></div>
+      <p class="note">1人だけ・2人だけでもOK。たくさん入れた人が上位、ではなく
+        「誰を1番に推したか」が効きます。</p>
+    </div>
+    <ul>
+      <li>名前を<b>タップで選択／もう一度タップで解除</b>（解除すると順位は繰り上がる）</li>
+      <li>人数が多いお題は<b>検索ボックス</b>で名前を絞り込み</li>
+    </ul>
+  </section>
+
+  <!-- 4 -->
+  <section class="slide">
+    <p class="kicker">STEP 3 / 保存と修正</p>
+    <h2>「保存」してロック。直したいときは「変更」</h2>
+    <div class="grid2">
+      <div class="card">
+        <p><span class="pill unsaved">未保存</span></p>
+        <p>選んでいる途中。<b>赤いボタンを押すと保存</b>されます。</p>
+      </div>
+      <div class="card">
+        <p><span class="pill saved">保存済み</span> ＋ <span class="pill" style="background:var(--card2);color:var(--text)">変更</span></p>
+        <p>保存するとチップが<b>ロック</b>。誤タップで崩れません。
+          直すときは<b>「変更」</b>を押して選び直し。</p>
+      </div>
+    </div>
+    <div class="card">
+      <p>画面上部の <span class="pill green">○問中△問 投票済み</span> で、やり残しが分かります。
+        全部のお題を「保存済み」にできたら完了です。</p>
+    </div>
+  </section>
+
+  <!-- 5 -->
+  <section class="slide">
+    <p class="kicker">まとめ / 注意点</p>
+    <h2>これだけ覚えればOK</h2>
+    <div class="card">
+      <ol class="steps">
+        <li>QR→合言葉→自分の名前</li>
+        <li>お題ごとに最大3人、<b>推す順にタップ</b>（3/2/1pt）</li>
+        <li><b>赤「未保存」を押して保存</b>。直すなら「変更」</li>
+        <li>上部の進捗が<b>全問「投票済み」</b>になれば完了</li>
+      </ol>
+    </div>
+    <p class="lead">締め切り後は変更できません。結果はスクリーンで発表します🏆<br>
+      集めた予想は次回の同窓会で「予想 vs 現実」を答え合わせ！</p>
+  </section>
+
+</div>
+
+<div class="nav">
+  <button id="prev">‹ 戻る</button>
+  <button id="next">次へ ›</button>
+  <span class="counter" id="counter"></span>
+  <div class="spacer"></div>
+  <div class="dots" id="dots"></div>
+</div>
+
+<script>
+  const slides=[...document.querySelectorAll('.slide')];
+  const dots=document.getElementById('dots');
+  let i=0;
+  slides.forEach((_,n)=>{const d=document.createElement('div');d.className='dot';d.onclick=()=>go(n);dots.appendChild(d)});
+  function go(n){i=Math.max(0,Math.min(slides.length-1,n));
+    slides.forEach((s,k)=>s.classList.toggle('active',k===i));
+    [...dots.children].forEach((d,k)=>d.classList.toggle('active',k===i));
+    document.getElementById('counter').textContent=`${i+1} / ${slides.length}`;}
+  document.getElementById('next').onclick=()=>go(i+1);
+  document.getElementById('prev').onclick=()=>go(i-1);
+  document.addEventListener('keydown',e=>{
+    if(e.key==='ArrowRight'||e.key===' '||e.key==='PageDown')go(i+1);
+    if(e.key==='ArrowLeft'||e.key==='PageUp')go(i-1);});
+  go(0);
+</script>
+</body>
+</html>
