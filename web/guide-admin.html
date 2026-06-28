@@ -6,12 +6,12 @@
 <title>未来予想 投票｜管理者向け運営ガイド</title>
 <style>
   :root{
-    --bg:#0b0a09; --card:#1a1410; --card2:#251c14; --accent:#ff7a18;
-    --accent2:#ffb02e; --text:#f7f1ea; --muted:#b6a896; --gold:#ffc24b;
+    --bg:#ffffff; --card:#fbf6f0; --card2:#f3ece2; --accent:#f26a1b;
+    --accent2:#c2410c; --text:#1b1714; --muted:#6f6760; --gold:#e8a23d;
   }
   *{box-sizing:border-box}
   body{margin:0;font-family:system-ui,-apple-system,"Hiragino Sans","Noto Sans JP",sans-serif;
-    background:radial-gradient(1100px 700px at 50% -10%,#3a230d,var(--bg));color:var(--text);
+    background:radial-gradient(1100px 700px at 50% -10%,#fff1e2,var(--bg));color:var(--text);
     min-height:100vh;overflow:hidden}
   .deck{height:100vh;display:flex;align-items:center;justify-content:center;padding:40px 24px 96px}
   .slide{display:none;width:min(1180px,100%);animation:fade .35s ease}
@@ -22,23 +22,23 @@
   h2{font-size:1.9rem;line-height:1.25;margin:0 0 16px}
   p,li{font-size:1.18rem;line-height:1.6}
   .lead{color:var(--muted);font-size:1.25rem}
-  .card{background:var(--card);border:1px solid rgba(255,255,255,.07);border-radius:18px;padding:20px 24px;margin:12px 0}
+  .card{background:var(--card);border:1px solid rgba(0,0,0,.1);border-radius:18px;padding:20px 24px;margin:12px 0;box-shadow:0 2px 10px rgba(0,0,0,.05)}
   ol.steps{margin:0;padding-left:0;list-style:none;counter-reset:s}
   ol.steps li{counter-increment:s;position:relative;padding:10px 0 10px 52px}
   ol.steps li::before{content:counter(s);position:absolute;left:0;top:8px;width:34px;height:34px;
     background:var(--accent);color:#1a0e00;font-weight:800;border-radius:50%;display:flex;align-items:center;justify-content:center}
   .grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
   table{width:100%;border-collapse:collapse;font-size:1.05rem}
-  th,td{text-align:left;padding:9px 8px;border-bottom:1px solid rgba(255,255,255,.1)}
+  th,td{text-align:left;padding:9px 8px;border-bottom:1px solid rgba(0,0,0,.12)}
   th{color:var(--accent2)}
-  code{background:#11152e;padding:2px 8px;border-radius:8px;font-size:.95em}
+  code{background:#f0e7da;color:#7a3a08;padding:2px 8px;border-radius:8px;font-size:.95em}
   .pill{display:inline-block;padding:3px 12px;border-radius:999px;font-weight:800;font-size:.95rem}
   .pill.key{background:var(--gold);color:#3a2a00}
   .note{color:var(--muted);font-size:1.02rem}
   .big{font-size:1.3rem;font-weight:800;margin:0 0 6px}
   .warn{border-color:rgba(255,107,107,.5)}
   .nav{position:fixed;left:0;right:0;bottom:0;height:72px;display:flex;align-items:center;gap:16px;
-    padding:0 24px;background:rgba(15,18,38,.7);backdrop-filter:blur(8px);border-top:1px solid rgba(255,255,255,.08)}
+    padding:0 24px;background:rgba(255,255,255,.85);backdrop-filter:blur(8px);border-top:1px solid rgba(0,0,0,.1)}
   .nav button{font:inherit;font-weight:800;border:none;border-radius:12px;padding:10px 18px;background:var(--card2);color:var(--text);cursor:pointer}
   .nav .spacer{flex:1}
   .dots{display:flex;gap:8px}
