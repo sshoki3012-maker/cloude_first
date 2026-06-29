@@ -1,0 +1,182 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>未来予想 投票｜管理者向け運営ガイド</title>
+<style>
+  :root{
+    --bg:#ffffff; --card:#fbf6f0; --card2:#f3ece2; --accent:#f26a1b;
+    --accent2:#c2410c; --text:#1b1714; --muted:#6f6760; --gold:#e8a23d;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:system-ui,-apple-system,"Hiragino Sans","Noto Sans JP",sans-serif;
+    background:radial-gradient(1100px 700px at 50% -10%,#fff1e2,var(--bg));color:var(--text);
+    min-height:100vh;overflow:hidden}
+  .deck{height:100vh;display:flex;align-items:center;justify-content:center;padding:40px 24px 96px}
+  .slide{display:none;width:min(1180px,100%);animation:fade .35s ease}
+  .slide.active{display:block}
+  @keyframes fade{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+  .kicker{color:var(--accent2);font-weight:800;letter-spacing:.08em;font-size:.95rem;margin:0 0 8px}
+  h1{font-size:2.5rem;line-height:1.2;margin:0 0 12px}
+  h2{font-size:1.9rem;line-height:1.25;margin:0 0 16px}
+  p,li{font-size:1.18rem;line-height:1.6}
+  .lead{color:var(--muted);font-size:1.25rem}
+  .card{background:var(--card);border:1px solid rgba(0,0,0,.1);border-radius:18px;padding:20px 24px;margin:12px 0;box-shadow:0 2px 10px rgba(0,0,0,.05)}
+  ol.steps{margin:0;padding-left:0;list-style:none;counter-reset:s}
+  ol.steps li{counter-increment:s;position:relative;padding:10px 0 10px 52px}
+  ol.steps li::before{content:counter(s);position:absolute;left:0;top:8px;width:34px;height:34px;
+    background:var(--accent);color:#1a0e00;font-weight:800;border-radius:50%;display:flex;align-items:center;justify-content:center}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  table{width:100%;border-collapse:collapse;font-size:1.05rem}
+  th,td{text-align:left;padding:9px 8px;border-bottom:1px solid rgba(0,0,0,.12)}
+  th{color:var(--accent2)}
+  code{background:#f0e7da;color:#7a3a08;padding:2px 8px;border-radius:8px;font-size:.95em}
+  .pill{display:inline-block;padding:3px 12px;border-radius:999px;font-weight:800;font-size:.95rem}
+  .pill.key{background:var(--gold);color:#3a2a00}
+  .note{color:var(--muted);font-size:1.02rem}
+  .big{font-size:1.3rem;font-weight:800;margin:0 0 6px}
+  .warn{border-color:rgba(255,107,107,.5)}
+  .nav{position:fixed;left:0;right:0;bottom:0;height:72px;display:flex;align-items:center;gap:16px;
+    padding:0 24px;background:rgba(255,255,255,.85);backdrop-filter:blur(8px);border-top:1px solid rgba(0,0,0,.1)}
+  .nav button{font:inherit;font-weight:800;border:none;border-radius:12px;padding:10px 18px;background:var(--card2);color:var(--text);cursor:pointer}
+  .nav .spacer{flex:1}
+  .dots{display:flex;gap:8px}
+  .dot{width:10px;height:10px;border-radius:50%;background:var(--card2);cursor:pointer}
+  .dot.active{background:var(--accent2)}
+  .counter{color:var(--muted);font-weight:700}
+  .title-emoji{font-size:3.2rem}
+  @media (max-width:640px){h1{font-size:1.8rem}h2{font-size:1.4rem}p,li{font-size:1rem}.grid2{grid-template-columns:1fr}}
+  @media print{
+    @page{size:A4 landscape;margin:0}
+    *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+    .nav{display:none}
+    .slide{display:flex!important;flex-direction:column;justify-content:center;
+      width:100%;min-height:100vh;opacity:1!important;animation:none!important;
+      page-break-after:always;break-after:page;margin:0;padding:0 6vw}
+    .deck{height:auto;display:block;padding:0}
+    body{overflow:visible}
+  }
+</style>
+</head>
+<body>
+<div class="deck">
+
+  <!-- 1 -->
+  <section class="slide active">
+    <div class="title-emoji">⚙️🏆</div>
+    <p class="kicker">主催者・管理者向け 運営ガイド</p>
+    <h1>未来予想 投票アプリ<br>準備と当日運営の進め方</h1>
+    <div class="card">
+      <table>
+        <tr><th>画面</th><th>役割</th></tr>
+        <tr><td><code>/index.html</code></td><td>投票者の入口（合言葉→名前選択）</td></tr>
+        <tr><td><code>/vote.html</code></td><td>投票（お題ごと最大3人・保存/変更）</td></tr>
+        <tr><td><code>/results.html</code></td><td>結果スクリーン（プロジェクタ・自動更新）</td></tr>
+        <tr><td><code>/admin.html</code></td><td>管理（受付・集計・編集・リセット）</td></tr>
+        <tr><td><code>/qr.html</code></td><td>投票URLのQR表示</td></tr>
+      </table>
+    </div>
+    <p class="note">構成：静的サイト（Netlify）＋ Supabase。矢印キー（← →）で進みます。</p>
+  </section>
+
+  <!-- 2 -->
+  <section class="slide">
+    <p class="kicker">STEP 1 / 事前準備（前日まで）</p>
+    <h2>DB作成 → 設定 → 名簿・お題の登録</h2>
+    <ol class="steps">
+      <li>Supabaseで <code>supabase/schema.sql</code> → <code>seed.sql</code> をSQL Editorで実行</li>
+      <li><code>web/config.js</code> に URL・Publishable key・<b>合言葉</b>を設定<br>
+        <span class="note">投票者用 <code>VOTER_PASSCODE</code> と 管理用 <code>ADMIN_PASSCODE</code> は別々</span></li>
+      <li>Netlifyにデプロイ（mainに連携すると自動公開）</li>
+      <li><b>admin画面</b>で名簿（約40名）とお題を本番用に差し替え</li>
+    </ol>
+    <div class="card note">お題は後から追加・編集・表示ON/OFF可。テスト投票は当日前に
+      「投票をリセット」で消しておきます。</div>
+  </section>
+
+  <!-- 3 -->
+  <section class="slide">
+    <p class="kicker">STEP 2 / 当日の運営フロー</p>
+    <h2>配布 → 投票 → 締切 → 発表</h2>
+    <ol class="steps">
+      <li><code>qr.html</code> をプロジェクタに映し、QRと<b>合言葉</b>を案内</li>
+      <li>参加者がスマホで投票（管理は<b>admin画面で投票状況を確認</b>）</li>
+      <li>頃合いで admin の<b>「受付を締め切る」</b>→ 以降は変更不可に</li>
+      <li><code>results.html</code> を投影して<b>結果発表</b>（数秒ごと自動更新・お題切替）</li>
+      <li>結果を<b>エクスポート</b>して保存（次回の答え合わせ用）</li>
+    </ol>
+    <div class="card note">結果画面はポイント順（傾斜配点）で上位を大きく表示。
+      「お題を自動で切替」にチェックすると一定間隔で巡回します。</div>
+  </section>
+
+  <!-- 4 -->
+  <section class="slide">
+    <p class="kicker">STEP 3 / 管理画面（admin.html）の操作</p>
+    <h2>合言葉で解除 → 各操作</h2>
+    <p>入口で <span class="pill key">ADMIN_PASSCODE</span> を入力して解除します。</p>
+    <div class="grid2">
+      <div class="card">
+        <p class="big"><b>受付の切り替え</b></p>
+        <p>「受付中／締切」をワンタップで切替。締切後は投票画面がロック。</p>
+      </div>
+      <div class="card">
+        <p class="big"><b>投票状況</b></p>
+        <p>「40人中○人が投票」「全○問回答○人」を集計表示。「更新」で最新化。</p>
+      </div>
+      <div class="card">
+        <p class="big"><b>お題・名簿の編集</b></p>
+        <p>その場で追加・改名・削除・表示ON/OFF。</p>
+      </div>
+      <div class="card warn">
+        <p class="big"><b>リセット</b></p>
+        <p>この回の投票を全削除（テスト用）。本番開始前のクリアに使用。</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 5 -->
+  <section class="slide">
+    <p class="kicker">データ保存・答え合わせ・注意点</p>
+    <h2>予想は残す。次回につなぐ</h2>
+    <div class="card">
+      <p><b>エクスポート</b>：admin から <b>JSON / CSV</b> で全投票を保存。
+        <code>event_id</code>（年度）付きで記録され、次回は新しい年度を作れば過去データは残ります。</p>
+    </div>
+    <div class="card warn">
+      <p><b>セキュリティの割り切り</b>：合言葉は公開ファイル（config.js）に入る
+        「余興レベルの軽い保護」です。<b>当日URLは身内だけに配布</b>してください。
+        厳密にするなら Supabase Auth 化が必要です。</p>
+    </div>
+    <p class="lead">困ったら：締切は admin の受付トグル／集計は「更新」ボタン／
+      やり直しは「リセット」。これだけ押さえれば運営できます。</p>
+  </section>
+
+</div>
+
+<div class="nav">
+  <button id="prev">‹ 戻る</button>
+  <button id="next">次へ ›</button>
+  <span class="counter" id="counter"></span>
+  <div class="spacer"></div>
+  <div class="dots" id="dots"></div>
+</div>
+
+<script>
+  const slides=[...document.querySelectorAll('.slide')];
+  const dots=document.getElementById('dots');
+  let i=0;
+  slides.forEach((_,n)=>{const d=document.createElement('div');d.className='dot';d.onclick=()=>go(n);dots.appendChild(d)});
+  function go(n){i=Math.max(0,Math.min(slides.length-1,n));
+    slides.forEach((s,k)=>s.classList.toggle('active',k===i));
+    [...dots.children].forEach((d,k)=>d.classList.toggle('active',k===i));
+    document.getElementById('counter').textContent=`${i+1} / ${slides.length}`;}
+  document.getElementById('next').onclick=()=>go(i+1);
+  document.getElementById('prev').onclick=()=>go(i-1);
+  document.addEventListener('keydown',e=>{
+    if(e.key==='ArrowRight'||e.key===' '||e.key==='PageDown')go(i+1);
+    if(e.key==='ArrowLeft'||e.key==='PageUp')go(i-1);});
+  go(0);
+</script>
+</body>
+</html>

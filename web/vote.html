@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+  <title>未来予想 投票</title>
+  <link rel="stylesheet" href="./css/style.css" />
+</head>
+<body>
+  <div class="wrap">
+    <div class="row">
+      <h1>🔮 投票</h1>
+      <div class="spacer"></div>
+      <span class="muted" id="whoami"></span>
+    </div>
+    <p class="sub" id="status-line">各お題で最大3人。タップした順に配点（1番目=3pt・2番目=2pt・3番目=1pt）。送信後も修正できます。</p>
+
+    <div class="progress" id="progress">投票状況を読み込み中…</div>
+
+    <div id="awards"></div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+  <script type="module" src="./js/vote.js"></script>
+</body>
+</html>

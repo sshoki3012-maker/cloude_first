@@ -1,0 +1,186 @@
+:root {
+  --bg: #f1e7d6;       /* ベージュ（ベース） */
+  --card: #fdfaf5;     /* カードはやや明るくして地と区別 */
+  --card2: #ece1cf;    /* チップ／タブ等のサブ面 */
+  --accent: #f26a1b;   /* オレンジ（ブランド／ボタン／選択） */
+  --accent2: #c2410c;  /* 深いオレンジ（見出し補助／バー） */
+  --good: #2e8b6e;     /* 緑：保存済み・完了 */
+  --bad: #e5484d;      /* 赤：未保存・締切 */
+  --text: #1b1714;
+  --muted: #6f6760;
+  --gold: #d98a1f;
+  --silver: #9aa1ad;
+  --bronze: #b5752f;
+  --radius: 16px;
+}
+
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+body {
+  margin: 0;
+  font-family: system-ui, -apple-system, "Hiragino Sans", "Noto Sans JP", sans-serif;
+  background: radial-gradient(1200px 800px at 50% -10%, #f8efdd, var(--bg));
+  color: var(--text);
+  min-height: 100vh;
+}
+
+.wrap { max-width: 720px; margin: 0 auto; padding: 16px 16px 80px; }
+
+h1 { font-size: 1.4rem; margin: 8px 0 4px; }
+h2 { font-size: 1.15rem; margin: 0; }
+.sub { color: var(--muted); font-size: .9rem; margin: 0 0 16px; }
+
+.card {
+  background: var(--card);
+  border: 1px solid rgba(0,0,0,.1);
+  border-radius: var(--radius);
+  padding: 16px;
+  margin-bottom: 16px;
+  box-shadow: 0 2px 10px rgba(0,0,0,.05);
+}
+
+.row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.spacer { flex: 1; }
+
+button, .btn {
+  font: inherit;
+  border: none;
+  border-radius: 12px;
+  padding: 12px 18px;
+  background: var(--accent);
+  color: #fff;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform .05s ease, opacity .2s;
+}
+button:active { transform: scale(.97); }
+button:disabled { opacity: .45; cursor: not-allowed; }
+.btn-ghost { background: var(--card2); color: var(--text); border: 1px solid rgba(0,0,0,.1); }
+.btn-sm { padding: 8px 12px; font-size: .85rem; }
+
+/* 未保存（要保存）＝赤で目立たせる / 保存済み＝緑でグレーアウト */
+.btn-unsaved { background: var(--bad); color: #fff; }
+.btn-saved {
+  background: var(--good); color: #fff;
+  opacity: .55; cursor: default;
+}
+.btn-saved:disabled { opacity: .55; }
+
+input, select {
+  font: inherit;
+  width: 100%;
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1px solid rgba(0,0,0,.18);
+  background: #fff;
+  color: var(--text);
+}
+label.fld { display: block; margin: 10px 0; }
+label.fld span { display: block; color: var(--muted); font-size: .85rem; margin-bottom: 6px; }
+
+/* 候補チップ（投票画面） */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 10px;
+}
+.chip {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 3px;
+  text-align: center;
+  padding: 12px 10px;
+  border-radius: 14px;
+  background: var(--card2);
+  border: 2px solid transparent;
+  cursor: pointer;
+  user-select: none;
+  font-weight: 600;
+  min-height: 56px;
+}
+.chip.selected { border-color: var(--accent); background: #ffe6d2; }
+.chip.disabled { opacity: .4; pointer-events: none; }
+
+/* 保存済み（ロック中）の名簿：操作不可。選択済みは見せ、未選択は薄く */
+.grid.locked { position: relative; }
+.grid.locked .chip { pointer-events: none; cursor: default; }
+.grid.locked .chip:not(.selected) { opacity: .45; }
+.chip-name { line-height: 1.2; }
+.chip-rank {
+  font-size: .72rem; font-weight: 800; color: #fff;
+  background: var(--accent); border-radius: 999px; padding: 1px 8px;
+}
+.chip-rank:empty { display: none; }
+
+.badge {
+  display: inline-block; padding: 4px 10px; border-radius: 999px;
+  font-size: .78rem; font-weight: 700;
+}
+.badge.done { background: var(--good); color: #fff; }
+.badge.todo { background: var(--gold); color: #fff; }
+.badge.closed { background: var(--bad); color: #fff; }
+
+/* お題カードの枠を投票状態で色分け（未投票を目立たせる） */
+.card.todo { border-color: rgba(217,138,31,.65); }
+.card.done { border-color: rgba(46,139,110,.5); }
+
+/* 全体進捗バー */
+.progress {
+  position: sticky; top: 0; z-index: 10;
+  background: var(--card2); border: 1px solid rgba(0,0,0,.1);
+  border-radius: 999px; padding: 10px 16px; margin: 0 0 16px;
+  font-weight: 800; text-align: center;
+}
+.progress.complete { background: #e3f5ee; border-color: var(--good); color: #14532d; }
+
+/* お題ごとの名前検索ボックス */
+.award-search { margin: 10px 0; }
+
+.count { color: var(--muted); font-size: .85rem; }
+.toast {
+  position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%);
+  background: #26201b; color: #fff; padding: 12px 18px; border-radius: 12px;
+  opacity: 0; transition: opacity .3s; pointer-events: none; z-index: 50;
+  border: 1px solid var(--good);
+}
+.toast.show { opacity: 1; }
+
+.muted { color: var(--muted); }
+.error { color: var(--bad); }
+a { color: var(--accent); }
+
+/* ===== 結果スクリーン（大画面） ===== */
+.screen { max-width: 1100px; }
+.tabs { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px; }
+.tab {
+  padding: 10px 16px; border-radius: 999px; background: var(--card2);
+  color: var(--muted); font-weight: 700; cursor: pointer; border: 2px solid transparent;
+}
+.tab.active { background: var(--accent); color: #fff; }
+.result-title { font-size: 2.2rem; font-weight: 800; margin: 8px 0 20px; }
+.rank-list { display: flex; flex-direction: column; gap: 14px; }
+.rank {
+  display: flex; align-items: center; gap: 20px;
+  background: var(--card); border: 1px solid rgba(0,0,0,.08);
+  border-radius: 18px; padding: 18px 22px;
+}
+.rank .pos { font-size: 2.4rem; font-weight: 900; width: 70px; text-align: center; }
+.rank.r1 .pos { color: var(--gold); }
+.rank.r2 .pos { color: var(--silver); }
+.rank.r3 .pos { color: var(--bronze); }
+.rank .name { font-size: 2rem; font-weight: 800; flex: 1; }
+.rank .bar-wrap { flex: 2; height: 22px; background: #ece5db; border-radius: 999px; overflow: hidden; }
+.rank .bar { height: 100%; background: linear-gradient(90deg, var(--accent), var(--accent2)); }
+.rank .votes { font-size: 2rem; font-weight: 900; width: 90px; text-align: right; }
+.live { font-size: .9rem; color: var(--good); }
+
+@media (max-width: 600px) {
+  .result-title { font-size: 1.6rem; }
+  .rank .name { font-size: 1.3rem; }
+  .rank .votes, .rank .pos { font-size: 1.6rem; }
+}
+
+/* 管理テーブル */
+table { width: 100%; border-collapse: collapse; }
+th, td { text-align: left; padding: 8px; border-bottom: 1px solid rgba(0,0,0,.12); font-size: .9rem; }
+.list-item { display: flex; gap: 8px; align-items: center; padding: 8px 0; border-bottom: 1px solid rgba(0,0,0,.08); }
+.list-item input { flex: 1; }
