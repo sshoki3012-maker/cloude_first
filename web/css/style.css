@@ -179,6 +179,109 @@ a { color: var(--accent); }
   .rank .votes, .rank .pos { font-size: 1.6rem; }
 }
 
+/* ===== 発表モード（授賞式風） ===== */
+/* 画面全体を覆うレイヤー。どこをタップしても進めるように全面をボタン扱いにする */
+#presentation {
+  position: fixed; inset: 0; z-index: 100;
+  background: radial-gradient(1200px 800px at 50% -10%, #f8efdd, var(--bg));
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  padding: 32px 24px;
+  cursor: pointer;
+  user-select: none; /* 連打で文字が選択されないように */
+}
+#p-stage { width: 100%; max-width: 1100px; }
+
+.p-award-label {
+  text-align: center; color: var(--muted);
+  font-size: 1.3rem; font-weight: 700; margin-bottom: 6px;
+}
+.p-title {
+  text-align: center; color: var(--accent2);
+  font-size: 3.2rem; font-weight: 900; margin-bottom: 34px;
+  line-height: 1.25;
+}
+
+/* 順位の行。プロジェクタで見やすいよう文字は特に大きく */
+.p-list { display: flex; flex-direction: column; gap: 18px; perspective: 900px; }
+.p-rank {
+  display: flex; align-items: center; gap: 24px;
+  background: var(--card); border: 2px solid rgba(0,0,0,.08);
+  border-radius: 22px; padding: 22px 30px;
+}
+.p-pos { font-size: 2.2rem; font-weight: 900; min-width: 120px; }
+.p-tie { display: block; font-size: 1rem; color: var(--muted); }
+.pr1 .p-pos { color: var(--gold); }
+.pr2 .p-pos { color: var(--silver); }
+.pr3 .p-pos { color: var(--bronze); }
+.p-name { flex: 1; font-size: 2.8rem; font-weight: 900; line-height: 1.2; }
+.p-pts { font-size: 2.4rem; font-weight: 900; white-space: nowrap; }
+.p-pts span { font-size: 1.1rem; }
+
+/* まだ伏せてある行は薄く・「？？？」表示 */
+.p-rank.closed { opacity: .7; }
+.p-rank.closed .p-name, .p-rank.closed .p-pts { color: var(--muted); letter-spacing: .15em; }
+
+/* 1位は金色＋ひとまわり大きく特別扱い */
+.p-rank.p-first {
+  background: linear-gradient(135deg, #fff6dd, #ffe9b8);
+  border-color: var(--gold);
+  box-shadow: 0 0 44px rgba(217, 138, 31, .45);
+  transform: scale(1.05);
+  padding: 30px 34px;
+}
+.p-rank.p-first .p-name { font-size: 3.6rem; }
+
+/* めくれるときのフリップアニメーション */
+.p-rank.flip { animation: flipOpen .7s ease both; }
+@keyframes flipOpen {
+  0%   { transform: rotateX(90deg); opacity: 0; }
+  60%  { transform: rotateX(-12deg); opacity: 1; }
+  100% { transform: rotateX(0); }
+}
+/* 1位だけは最後に大きくなる特別版 */
+.p-rank.p-first.flip { animation: flipOpenFirst .8s ease both; }
+@keyframes flipOpenFirst {
+  0%   { transform: rotateX(90deg) scale(1); opacity: 0; }
+  60%  { transform: rotateX(-12deg) scale(1.12); opacity: 1; }
+  100% { transform: rotateX(0) scale(1.05); }
+}
+
+/* 投票がなかったお題・締め画面 */
+.p-empty { text-align: center; font-size: 1.8rem; color: var(--muted); }
+.p-finale { text-align: center; }
+.p-finale-emoji { font-size: 4rem; }
+.p-finale-title { font-size: 4.4rem; font-weight: 900; color: var(--accent2); margin: 18px 0; }
+.p-finale-sub { font-size: 1.9rem; color: var(--muted); }
+
+/* 画面隅の小さい操作ボタン（戻る・終了） */
+#p-back, #p-exit {
+  position: absolute; top: 14px; z-index: 105;
+  background: var(--card2); color: var(--muted);
+  border: 1px solid rgba(0,0,0,.15); border-radius: 999px;
+  padding: 8px 14px; font-size: .85rem; font-weight: 700;
+}
+#p-back { left: 14px; }
+#p-exit { right: 14px; }
+
+/* 画面下の操作ヒント */
+#p-hint {
+  position: absolute; bottom: 20px;
+  color: var(--muted); font-size: 1.1rem; font-weight: 700;
+}
+
+/* 紙吹雪キャンバス：最前面だがタップは素通しさせる */
+#confetti { position: fixed; inset: 0; z-index: 110; pointer-events: none; }
+
+/* スマホなど小さい画面では少し縮める */
+@media (max-width: 700px) {
+  .p-title { font-size: 2rem; }
+  .p-pos { font-size: 1.5rem; min-width: 80px; }
+  .p-name { font-size: 1.7rem; }
+  .p-rank.p-first .p-name { font-size: 2rem; }
+  .p-pts { font-size: 1.5rem; }
+  .p-finale-title { font-size: 2.6rem; }
+}
+
 /* 管理テーブル */
 table { width: 100%; border-collapse: collapse; }
 th, td { text-align: left; padding: 8px; border-bottom: 1px solid rgba(0,0,0,.12); font-size: .9rem; }

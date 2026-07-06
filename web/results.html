@@ -11,6 +11,7 @@
     <div class="row">
       <h1 id="app-title">🏆 結果発表</h1>
       <div class="spacer"></div>
+      <button id="present-btn" class="btn-sm">🎉 発表モード</button>
       <span class="live" id="live">● LIVE</span>
     </div>
 
@@ -24,6 +25,18 @@
     <div class="tabs" id="tabs"></div>
     <div id="result"></div>
   </div>
+
+  <!-- 発表モード（授賞式風）。通常は非表示。
+       「🎉 発表モード」ボタンか、URL に ?mode=presentation を付けると始まる -->
+  <div id="presentation" style="display:none">
+    <button id="p-back" title="1つ戻る（キーボードの ← でも戻れます）">← 戻る</button>
+    <button id="p-exit" title="発表モードを終了してLIVE表示に戻る">✕ 終了</button>
+    <div id="p-stage"></div>
+    <div id="p-hint"></div>
+  </div>
+
+  <!-- 紙吹雪を描くためのキャンバス（普段は透明で邪魔しない） -->
+  <canvas id="confetti"></canvas>
 
   <script type="module" src="./js/results.js"></script>
 </body>
