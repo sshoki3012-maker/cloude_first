@@ -4,7 +4,7 @@
 
 // アプリのタイトル。ここを書き換えると全画面（投票・結果・QR・管理）の
 // 見出しとブラウザのタブ名にまとめて反映されます
-export const APP_TITLE = "○○○";
+export const APP_TITLE = "5年後予想選挙";
 
 // Supabase ダッシュボード > Project Settings > API から取得
 export const SUPABASE_URL      = "https://tpnuxzhmjyqzyilhyqcj.supabase.co";
