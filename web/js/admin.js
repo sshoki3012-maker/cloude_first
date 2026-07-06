@@ -1,7 +1,11 @@
 import { supabase } from "../lib/supabase.js";
-import { EVENT_ID, ADMIN_PASSCODE } from "../config.js";
+import { APP_TITLE, EVENT_ID, ADMIN_PASSCODE } from "../config.js";
 
 const $ = (s) => document.querySelector(s);
+
+// アプリタイトルをタブ名と見出しに反映（config.js の APP_TITLE を変えるだけでOK）
+document.title = `${APP_TITLE} 管理`;
+$("#app-title").textContent = `⚙️ ${APP_TITLE} 管理画面`;
 
 function toast(msg, isError = false) {
   const t = $("#toast");

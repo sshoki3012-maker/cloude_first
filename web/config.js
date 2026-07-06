@@ -2,6 +2,10 @@
 // アプリ設定 — ここだけ書き換えれば動きます
 // =============================================================
 
+// アプリのタイトル。ここを書き換えると全画面（投票・結果・QR・管理）の
+// 見出しとブラウザのタブ名にまとめて反映されます
+export const APP_TITLE = "○○○";
+
 // Supabase ダッシュボード > Project Settings > API から取得
 export const SUPABASE_URL      = "https://tpnuxzhmjyqzyilhyqcj.supabase.co";
 export const SUPABASE_ANON_KEY = "sb_publishable_TMANElHzpqayEt-dNgOFPQ_tGzSB8si";

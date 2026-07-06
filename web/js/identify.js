@@ -1,7 +1,11 @@
 import { supabase } from "../lib/supabase.js";
-import { EVENT_ID, VOTER_PASSCODE } from "../config.js";
+import { APP_TITLE, EVENT_ID, VOTER_PASSCODE } from "../config.js";
 
 const $ = (s) => document.querySelector(s);
+
+// アプリタイトルをタブ名と見出しに反映（config.js の APP_TITLE を変えるだけでOK）
+document.title = `${APP_TITLE} 投票 — ログイン`;
+$("#app-title").textContent = `🔮 ${APP_TITLE} 投票`;
 const STORAGE_KEY = `mirai_voter_${EVENT_ID}`;
 const GATE_KEY = `mirai_gate_${EVENT_ID}`;
 

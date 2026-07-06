@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>未来予想 投票QR</title>
+  <title>投票QR</title>
   <link rel="stylesheet" href="./css/style.css" />
   <style>
     .qr-box { text-align: center; padding: 24px; }
@@ -13,7 +13,7 @@
 </head>
 <body>
   <div class="wrap">
-    <h1>📱 投票はこちらから</h1>
+    <h1 id="app-title">📱 投票はこちらから</h1>
     <p class="sub">スマホのカメラでQRを読み取ってください</p>
     <div class="card qr-box">
       <div id="qr"></div>
@@ -23,7 +23,12 @@
 
   <script src="https://cdn.jsdelivr.net/gh/davidshimjs/qrcodejs@master/qrcode.min.js"></script>
   <script type="module">
-    import { VOTE_URL } from "./config.js";
+    import { APP_TITLE, VOTE_URL } from "./config.js";
+
+    // アプリタイトルをタブ名と見出しに反映（config.js の APP_TITLE を変えるだけでOK）
+    document.title = `${APP_TITLE} 投票QR`;
+    document.getElementById("app-title").textContent = `📱 ${APP_TITLE} 投票はこちらから`;
+
     const url = VOTE_URL || new URL("./index.html", location.href).href;
     document.getElementById("url").textContent = url;
     new QRCode(document.getElementById("qr"), {

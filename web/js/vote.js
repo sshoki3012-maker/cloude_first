@@ -1,7 +1,10 @@
 import { supabase } from "../lib/supabase.js";
-import { EVENT_ID, MAX_PICKS } from "../config.js";
+import { APP_TITLE, EVENT_ID, MAX_PICKS } from "../config.js";
 
 const $ = (s) => document.querySelector(s);
+
+// アプリタイトルをタブ名に反映（config.js の APP_TITLE を変えるだけでOK）
+document.title = `${APP_TITLE} 投票`;
 const STORAGE_KEY = `mirai_voter_${EVENT_ID}`;
 
 function toast(msg, isError = false) {

@@ -1,7 +1,11 @@
 import { supabase } from "../lib/supabase.js";
-import { EVENT_ID, RESULTS_TOP_N, POLL_INTERVAL_MS } from "../config.js";
+import { APP_TITLE, EVENT_ID, RESULTS_TOP_N, POLL_INTERVAL_MS } from "../config.js";
 
 const $ = (s) => document.querySelector(s);
+
+// アプリタイトルをタブ名と見出しに反映（config.js の APP_TITLE を変えるだけでOK）
+document.title = `${APP_TITLE} 結果発表`;
+$("#app-title").textContent = `🏆 ${APP_TITLE} 結果発表`;
 
 let participants = new Map(); // id -> name
 let awards = [];
