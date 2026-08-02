@@ -282,6 +282,129 @@ a { color: var(--accent); }
   .p-finale-title { font-size: 2.6rem; }
 }
 
+/* ===== 共通ナビゲーションバー（全画面の上部） ===== */
+.appnav {
+  display: flex; gap: 8px; align-items: center;
+  padding: 10px 12px;
+  background: var(--card2);
+  border-bottom: 1px solid rgba(0,0,0,.12);
+  overflow-x: auto;            /* スマホで入り切らないときは横スクロール */
+  -webkit-overflow-scrolling: touch;
+}
+.appnav-btn {
+  flex: 0 0 auto;
+  padding: 8px 14px; border-radius: 999px;
+  background: var(--card); color: var(--text);
+  border: 1px solid rgba(0,0,0,.12);
+  font-size: .85rem; font-weight: 700;
+  text-decoration: none; white-space: nowrap;
+}
+/* 今いるページのボタン：ハイライトして押せない見た目に */
+.appnav-btn.current {
+  background: var(--accent); color: #fff; border-color: var(--accent);
+  pointer-events: none;
+}
+/* 発表中はナビバーを隠す */
+.appnav.presenting { display: none; }
+/* ☰ボタンで呼び出したときは、発表画面の上に重ねて表示する */
+.appnav.presenting.overlay-show {
+  display: flex;
+  position: fixed; top: 0; left: 0; right: 0; z-index: 130;
+  box-shadow: 0 2px 12px rgba(0,0,0,.2);
+}
+/* 発表中にナビを呼び出す小さなボタン（画面左下の隅） */
+#nav-peek {
+  position: fixed; left: 10px; bottom: 10px; z-index: 130;
+  width: 40px; height: 40px; padding: 0;
+  border-radius: 999px;
+  background: rgba(38,32,27,.35); color: #fff;
+  font-size: 1.1rem; line-height: 1;
+  border: none;
+}
+
+/* ===== 管理画面：思い出ランキング発表の設定 ===== */
+.mem-cat-title {
+  font-size: 1rem; margin: 14px 0 6px;
+  color: var(--accent2);
+  border-bottom: 2px solid rgba(194,65,12,.25);
+  padding-bottom: 4px;
+}
+.mem-item {
+  display: flex; gap: 10px; align-items: flex-start;
+  padding: 8px 6px; border-radius: 10px;
+  cursor: pointer;
+}
+.mem-item input { width: auto; margin-top: 3px; }
+.mem-item.checked { background: #ffe6d2; }
+.mem-item-body { display: flex; flex-direction: column; gap: 2px; }
+.mem-item-title { font-weight: 700; }
+.mem-item-detail { font-size: .82rem; color: var(--muted); }
+.mem-order-item {
+  display: flex; gap: 8px; align-items: center;
+  padding: 8px 4px; border-bottom: 1px solid rgba(0,0,0,.08);
+}
+.mem-order-num {
+  flex: 0 0 auto;
+  min-width: 28px; height: 28px;
+  display: inline-flex; align-items: center; justify-content: center;
+  border-radius: 999px; background: var(--accent); color: #fff;
+  font-size: .85rem; font-weight: 800;
+}
+.mem-order-title { flex: 1; font-weight: 600; font-size: .95rem; }
+
+/* ===== 思い出発表：男女ペアの行の色分け ===== */
+.pr-m .p-pos { color: #4a7fd4; }  /* 男子は青系 */
+.pr-f .p-pos { color: #e5484d; }  /* 女子は赤系 */
+
+/* ===== 横画面（ランドスケープ）対応 =====
+   スマホをプロジェクタにつないで横向きで発表するとき用。
+   縦画面のスタイルには手を付けず、横向きのときだけ上書きする。
+   横画面は「高さ」が足りなくなるので、文字サイズは vh（画面の高さ基準）で
+   決めて、1画面に収まるようにする。回転するとメディアクエリが自動で
+   切り替わるので、リロードは不要。 */
+@media (orientation: landscape) {
+  #presentation { padding: 2vh 3vw; }
+
+  /* 縦並びだった「項目名」と「順位リスト」を左右2カラムに分ける
+     左：カテゴリ表示＋項目名（大きく） 右：1位〜3位（または男女）のリスト */
+  #p-stage {
+    display: grid;
+    grid-template-columns: 42% 1fr;
+    grid-template-areas:
+      "label list"
+      "title list";
+    align-items: center;
+    align-content: center;
+    column-gap: 3vw;
+    row-gap: 1vh;
+    max-width: none;
+    height: 100%;
+  }
+  .p-award-label { grid-area: label; align-self: end; font-size: 2.6vh; margin: 0; }
+  .p-title { grid-area: title; align-self: start; font-size: 6.5vh; margin: 0; }
+  .p-list { grid-area: list; gap: 1.8vh; }
+
+  /* 順位の行：上下の余白を詰めて、高さ基準の文字サイズにする */
+  .p-rank { padding: 1.6vh 2.5vw; gap: 2vw; border-radius: 2.4vh; }
+  .p-pos { font-size: 4vh; min-width: 11vh; }
+  .p-tie { font-size: 1.8vh; }
+  .p-name { font-size: 5.6vh; }
+  .p-pts { font-size: 4vh; }
+  .p-pts span { font-size: 1.8vh; }
+  .p-rank.p-first { padding: 2.2vh 2.5vw; }
+  .p-rank.p-first .p-name { font-size: 6.6vh; }
+
+  /* 導入・締め・投票なしの画面は左右いっぱいを使う（1カラム扱い） */
+  .p-finale, .p-empty { grid-column: 1 / -1; }
+  .p-finale-emoji { font-size: 8vh; }
+  .p-finale-title { font-size: 10vh; margin: 1.5vh 0; }
+  .p-finale-sub { font-size: 3.6vh; }
+  .p-empty { font-size: 3.6vh; }
+
+  /* 画面下のヒントも高さ基準で小さめに */
+  #p-hint { bottom: 1.2vh; font-size: 2.2vh; }
+}
+
 /* 管理テーブル */
 table { width: 100%; border-collapse: collapse; }
 th, td { text-align: left; padding: 8px; border-bottom: 1px solid rgba(0,0,0,.12); font-size: .9rem; }

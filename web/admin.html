@@ -69,6 +69,35 @@
         </div>
       </div>
 
+      <!-- 思い出ランキング発表の設定 -->
+      <div class="card">
+        <div class="row">
+          <h2>思い出ランキング発表の設定</h2>
+          <div class="spacer"></div>
+          <span class="badge todo" id="mem-count">0項目 選択中</span>
+        </div>
+        <p class="muted">
+          チェックした項目だけが「思い出発表」画面（memories.html）で発表されます。
+          発表する順番は下の「発表順」で上下ボタンを使って並べ替えできます。
+          最後に「保存」を押すのを忘れずに。
+        </p>
+
+        <!-- カテゴリごとのチェックボックス一覧（JSで生成） -->
+        <div id="mem-categories"></div>
+
+        <!-- 発表順の並べ替え（JSで生成） -->
+        <h2 style="margin-top:16px">発表順</h2>
+        <p class="muted">上にあるものから順に発表されます。</p>
+        <div id="mem-order"></div>
+
+        <div class="row" style="margin-top:12px">
+          <button id="mem-save">保存</button>
+          <button id="mem-clear" class="btn-ghost btn-sm">すべて選択解除</button>
+          <div class="spacer"></div>
+          <a class="btn btn-ghost btn-sm" href="./memories.html" target="_blank">思い出発表を開く</a>
+        </div>
+      </div>
+
       <!-- データ -->
       <div class="card">
         <h2>データ</h2>
@@ -84,6 +113,11 @@
   </div>
 
   <div class="toast" id="toast"></div>
+  <!-- 画面上部の共通ナビゲーションバー -->
+  <script type="module">
+    import { setupNav } from "./js/nav.js";
+    setupNav("admin");
+  </script>
   <script type="module" src="./js/admin.js"></script>
 </body>
 </html>

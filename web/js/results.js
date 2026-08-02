@@ -1,7 +1,11 @@
 import { supabase } from "../lib/supabase.js";
 import { APP_TITLE, EVENT_ID, RESULTS_TOP_N, POLL_INTERVAL_MS } from "../config.js";
+import { setupNav, navPresenting } from "./nav.js";
 
 const $ = (s) => document.querySelector(s);
+
+// 画面上部の共通ナビゲーションバー
+setupNav("results");
 
 // アプリタイトルをタブ名と見出しに反映（config.js の APP_TITLE を変えるだけでOK）
 document.title = `${APP_TITLE} 結果発表`;
@@ -176,12 +180,14 @@ function startPresentation() {
   const total = items.reduce((sum, it) => sum + it.groups.length + 1, 0);
   presentation = { items, step: 0, total };
   $("#presentation").style.display = "flex";
+  navPresenting(true); // 発表中はナビバーを隠す（☰ボタンで再表示できる）
   renderPresentation(null);
 }
 
 function exitPresentation() {
   presentation = null;
   $("#presentation").style.display = "none";
+  navPresenting(false); // ナビバーを元に戻す
   poll(); // LIVE表示を最新の状態に戻す
 }
 

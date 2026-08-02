@@ -104,3 +104,23 @@ create policy "delete votes" on votes for delete using (true);
 create policy "write participants" on participants for all using (true) with check (true);
 create policy "write awards"       on awards       for all using (true) with check (true);
 create policy "write settings"     on settings     for all using (true) with check (true);
+
+-- =============================================================
+-- 思い出ランキング発表の設定（memories.html / admin.html 用）
+--   selected_ids: 発表する項目の id（例 ["q1","q22"]）を発表順に持つ
+--   項目の中身（タイトルや順位）は web/memories.js に固定データとして持つ
+-- =============================================================
+create table if not exists memory_settings (
+  event_id     text primary key,
+  selected_ids jsonb not null default '[]'::jsonb
+);
+
+alter table memory_settings enable row level security;
+
+-- 参照は全員可。書き込みは他の管理操作と同じく anon に開放（余興用の割り切り）
+create policy "read memory_settings"  on memory_settings for select using (true);
+create policy "write memory_settings" on memory_settings for all using (true) with check (true);
+
+-- 初期行（EVENT_ID は config.js と合わせること）
+insert into memory_settings (event_id) values ('2026')
+on conflict (event_id) do nothing;

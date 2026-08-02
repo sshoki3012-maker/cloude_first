@@ -1,5 +1,6 @@
 import { supabase } from "../lib/supabase.js";
 import { APP_TITLE, EVENT_ID, ADMIN_PASSCODE } from "../config.js";
+import { MEMORIES, MEMORY_CATEGORIES } from "../memories.js";
 
 const $ = (s) => document.querySelector(s);
 
@@ -31,7 +32,9 @@ $("#pass").addEventListener("keydown", (e) => {
 
 // ---- 受付状態 ----
 async function refresh() {
-  await Promise.all([loadSettings(), loadStats(), loadAwards(), loadPeople()]);
+  await Promise.all([
+    loadSettings(), loadStats(), loadAwards(), loadPeople(), loadMemorySettings(),
+  ]);
 }
 
 // 投票完了状況：votes の voter_id から集計（DB変更なしで算出）
@@ -187,6 +190,132 @@ $("#add-person").addEventListener("click", async () => {
   if (error) return toast("追加失敗", true);
   $("#new-person").value = "";
   loadPeople();
+});
+
+// =============================================================
+// 思い出ランキング発表の設定
+// - 発表したい項目にチェックを入れて、順番を決めて「保存」する
+// - 保存先は Supabase の memory_settings テーブル（selected_ids 列）
+// =============================================================
+
+// 選択中の項目 id の配列。並び順がそのまま発表順になる
+let memSelected = [];
+
+// 保存済みの選択を読み込む
+async function loadMemorySettings() {
+  const { data, error } = await supabase
+    .from("memory_settings")
+    .select("selected_ids")
+    .eq("event_id", EVENT_ID)
+    .maybeSingle();
+  if (error) {
+    console.error(error);
+    toast("思い出設定の読込に失敗（memory_settings テーブルはありますか？）", true);
+  }
+  // memories.js に存在しない id が混ざっていたら取り除く
+  memSelected = (data?.selected_ids || []).filter((id) =>
+    MEMORIES.some((m) => m.id === id)
+  );
+  renderMemorySection();
+}
+
+// 項目の中身を1行のテキストにする（チェック時に表示する答え）
+function memDetailText(m) {
+  if (m.type === "best3") {
+    return `1位 ${m.ranks[0]} ／ 2位 ${m.ranks[1]} ／ 3位 ${m.ranks[2]}`;
+  }
+  return `男：${m.male} ／ 女：${m.female}`;
+}
+
+// チェックボックス一覧と発表順リストをまとめて描き直す
+function renderMemorySection() {
+  // ---- 選択数のカウント表示 ----
+  const count = $("#mem-count");
+  count.textContent = `${memSelected.length}項目 選択中`;
+  count.className = "badge " + (memSelected.length ? "done" : "todo");
+
+  // ---- カテゴリごとのチェックボックス一覧 ----
+  const catRoot = $("#mem-categories");
+  catRoot.innerHTML = "";
+  MEMORY_CATEGORIES.forEach((cat) => {
+    const box = document.createElement("div");
+    box.className = "mem-category";
+    const h = document.createElement("h3");
+    h.className = "mem-cat-title";
+    h.textContent = cat;
+    box.appendChild(h);
+
+    MEMORIES.filter((m) => m.category === cat).forEach((m) => {
+      const checked = memSelected.includes(m.id);
+      const row = document.createElement("label");
+      row.className = "mem-item" + (checked ? " checked" : "");
+      row.innerHTML = `
+        <input type="checkbox" ${checked ? "checked" : ""} />
+        <span class="mem-item-body">
+          <span class="mem-item-title">${m.title}</span>
+          ${checked ? `<span class="mem-item-detail">${memDetailText(m)}</span>` : ""}
+        </span>`;
+      row.querySelector("input").addEventListener("change", (e) => {
+        if (e.target.checked) {
+          memSelected.push(m.id); // チェックした順に末尾へ追加
+        } else {
+          memSelected = memSelected.filter((id) => id !== m.id);
+        }
+        renderMemorySection();
+      });
+      box.appendChild(row);
+    });
+    catRoot.appendChild(box);
+  });
+
+  // ---- 発表順の並べ替えリスト ----
+  const orderRoot = $("#mem-order");
+  orderRoot.innerHTML = "";
+  if (!memSelected.length) {
+    orderRoot.innerHTML = `<p class="muted">まだ何も選ばれていません。</p>`;
+    return;
+  }
+  memSelected.forEach((id, i) => {
+    const m = MEMORIES.find((x) => x.id === id);
+    const row = document.createElement("div");
+    row.className = "mem-order-item";
+    row.innerHTML = `
+      <span class="mem-order-num">${i + 1}</span>
+      <span class="mem-order-title">${m.title}<span class="muted"> （${m.category}）</span></span>
+      <button class="btn-sm btn-ghost" data-act="up" ${i === 0 ? "disabled" : ""}>↑</button>
+      <button class="btn-sm btn-ghost" data-act="down" ${i === memSelected.length - 1 ? "disabled" : ""}>↓</button>`;
+    // ↑ボタン：1つ上の項目と入れ替える
+    row.querySelector('[data-act="up"]').addEventListener("click", () => {
+      [memSelected[i - 1], memSelected[i]] = [memSelected[i], memSelected[i - 1]];
+      renderMemorySection();
+    });
+    // ↓ボタン：1つ下の項目と入れ替える
+    row.querySelector('[data-act="down"]').addEventListener("click", () => {
+      [memSelected[i], memSelected[i + 1]] = [memSelected[i + 1], memSelected[i]];
+      renderMemorySection();
+    });
+    orderRoot.appendChild(row);
+  });
+}
+
+// 保存：selected_ids を memory_settings に書き込む（無ければ行ごと作る）
+$("#mem-save").addEventListener("click", async () => {
+  const { error } = await supabase
+    .from("memory_settings")
+    .upsert({ event_id: EVENT_ID, selected_ids: memSelected });
+  if (error) {
+    console.error(error);
+    return toast("保存失敗（memory_settings テーブルはありますか？）", true);
+  }
+  toast(`保存しました（${memSelected.length}項目）`);
+});
+
+// すべて選択解除（画面上だけ。確定するには「保存」を押す）
+$("#mem-clear").addEventListener("click", () => {
+  if (!memSelected.length) return;
+  if (!confirm("すべての選択を外します。よろしいですか？（「保存」を押すまで確定はされません）")) return;
+  memSelected = [];
+  renderMemorySection();
 });
 
 // ---- リセット ----

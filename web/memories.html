@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>思い出発表</title>
+  <link rel="stylesheet" href="./css/style.css" />
+</head>
+<body>
+  <!-- 発表画面（results.html の発表モードと同じ見た目を使い回す）。
+       このページは開いた瞬間から発表モードなので、常に全画面表示 -->
+  <div id="presentation">
+    <button id="p-back" title="1つ戻る（キーボードの ← でも戻れます）">← 戻る</button>
+    <div id="p-stage"></div>
+    <div id="p-hint"></div>
+  </div>
+
+  <!-- 紙吹雪を描くためのキャンバス（普段は透明で邪魔しない） -->
+  <canvas id="confetti"></canvas>
+
+  <script type="module" src="./js/memories-show.js"></script>
+</body>
+</html>
