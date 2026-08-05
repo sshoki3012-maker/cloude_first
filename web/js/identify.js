@@ -21,7 +21,8 @@ let participants = [];
 // ---- 入場ゲート（合言葉） ----
 function unlockGate() {
   $("#gate").style.display = "none";
-  $("#login").style.display = "block";
+  // display は空にして CSS に任せる（横画面では2カラム表示になるため）
+  $("#login").style.display = "";
   // 既存ログインの案内はゲート解除後にだけ表示
   const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || "null");
   if (saved) {

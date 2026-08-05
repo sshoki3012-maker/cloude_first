@@ -8,22 +8,37 @@
 </head>
 <body>
   <div class="wrap screen">
-    <div class="row">
-      <h1 id="app-title">🏆 結果発表</h1>
-      <div class="spacer"></div>
-      <button id="present-btn" class="btn-sm">🎉 発表モード</button>
-      <span class="live" id="live">● LIVE</span>
-    </div>
-
-    <div class="row" style="margin-bottom:12px">
-      <label class="row" style="gap:6px">
-        <input type="checkbox" id="autorotate" style="width:auto" />
-        <span class="muted">お題を自動で切替</span>
+    <!-- 合言葉ゲート（管理画面と同じ合言葉・同じ仕組み。
+         一度認証すれば同じブラウザでは次回から入力不要） -->
+    <div id="gate" class="card" style="display:none">
+      <h2>🔒 結果発表はロック中です</h2>
+      <label class="fld">
+        <span>合言葉</span>
+        <input id="pass" type="password" placeholder="管理画面と同じ合言葉" />
       </label>
+      <button id="unlock">解除</button>
+      <p class="muted">config.js の ADMIN_PASSCODE と同じ合言葉です。</p>
     </div>
 
-    <div class="tabs" id="tabs"></div>
-    <div id="result"></div>
+    <!-- 本体（認証後に表示される） -->
+    <div id="content" style="display:none">
+      <div class="row">
+        <h1 id="app-title">🏆 結果発表</h1>
+        <div class="spacer"></div>
+        <button id="present-btn" class="btn-sm">🎉 発表モード</button>
+        <span class="live" id="live">● LIVE</span>
+      </div>
+
+      <div class="row" style="margin-bottom:12px">
+        <label class="row" style="gap:6px">
+          <input type="checkbox" id="autorotate" style="width:auto" />
+          <span class="muted">お題を自動で切替</span>
+        </label>
+      </div>
+
+      <div class="tabs" id="tabs"></div>
+      <div id="result"></div>
+    </div>
   </div>
 
   <!-- 発表モード（授賞式風）。通常は非表示。

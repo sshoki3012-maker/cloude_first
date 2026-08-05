@@ -141,6 +141,7 @@ label.fld span { display: block; color: var(--muted); font-size: .85rem; margin-
   background: #26201b; color: #fff; padding: 12px 18px; border-radius: 12px;
   opacity: 0; transition: opacity .3s; pointer-events: none; z-index: 50;
   border: 1px solid var(--good);
+  max-width: min(92vw, 520px); text-align: center; /* 長い文言でも画面からはみ出さない */
 }
 .toast.show { opacity: 1; }
 
@@ -246,6 +247,14 @@ a { color: var(--accent); }
   100% { transform: rotateX(0) scale(1.05); }
 }
 
+/* 思い出発表：1段階目「題目のタイトルだけを画面いっぱいに」 */
+.p-solo { text-align: center; }
+.p-solo-cat { color: var(--muted); font-size: 1.4rem; font-weight: 700; margin-bottom: 16px; }
+.p-solo-title {
+  color: var(--accent2); font-size: 3.8rem; font-weight: 900;
+  line-height: 1.25; overflow-wrap: anywhere;
+}
+
 /* 投票がなかったお題・締め画面 */
 .p-empty { text-align: center; font-size: 1.8rem; color: var(--muted); }
 .p-finale { text-align: center; }
@@ -280,6 +289,8 @@ a { color: var(--accent); }
   .p-rank.p-first .p-name { font-size: 2rem; }
   .p-pts { font-size: 1.5rem; }
   .p-finale-title { font-size: 2.6rem; }
+  .p-solo-title { font-size: 2.3rem; }
+  .p-solo-cat { font-size: 1rem; }
 }
 
 /* ===== 共通ナビゲーションバー（全画面の上部） ===== */
@@ -401,8 +412,42 @@ a { color: var(--accent); }
   .p-finale-sub { font-size: 3.6vh; }
   .p-empty { font-size: 3.6vh; }
 
+  /* 思い出発表の「タイトルだけ」画面も高さ基準で大きく */
+  .p-solo { grid-column: 1 / -1; }
+  .p-solo-cat { font-size: 3vh; margin-bottom: 2vh; }
+  .p-solo-title { font-size: 11vh; }
+
   /* 画面下のヒントも高さ基準で小さめに */
   #p-hint { bottom: 1.2vh; font-size: 2.2vh; }
+
+  /* ---- ここから発表画面以外（入口・管理・結果LIVE）の横画面調整 ---- */
+
+  /* 縦長ページは横幅を広く使って高さを節約 */
+  .wrap { max-width: 1100px; }
+
+  /* 合言葉ゲートのカードは中央に細めで置く（横に間延びさせない） */
+  #gate { max-width: 520px; margin-left: auto; margin-right: auto; }
+
+  /* 投票入口（index.html）：名前検索と名簿選択を左右2カラムに */
+  #login { display: grid; grid-template-columns: 1fr 1fr; column-gap: 24px; align-items: start; }
+  #login > p { grid-column: 1 / -1; }
+
+  /* 管理画面（admin.html）：カードを2列に流し込んで高さを節約
+     （項目が多いので縦スクロール自体は残る） */
+  #panel { columns: 2; column-gap: 16px; }
+  #panel .card { break-inside: avoid; }
+
+  /* 結果発表のLIVE表示：高さ基準の文字サイズで1画面に収まりやすく */
+  .screen h1 { font-size: 3.2vh; margin: .5vh 0; }
+  .screen .result-title { font-size: 5vh; margin: .5vh 0 1.5vh; }
+  .screen .tabs { gap: .8vh; margin-bottom: 1.2vh; }
+  .screen .tab { padding: .9vh 1.4vw; font-size: 2.2vh; }
+  .screen .rank-list { gap: 1.4vh; }
+  .screen .rank { padding: 1.4vh 2vw; gap: 1.5vw; border-radius: 2vh; }
+  .screen .rank .pos { font-size: 3.6vh; width: 8vh; }
+  .screen .rank .name { font-size: 3.4vh; }
+  .screen .rank .votes { font-size: 3.4vh; width: 14vh; }
+  .screen .rank .bar-wrap { height: 2.4vh; }
 }
 
 /* 管理テーブル */

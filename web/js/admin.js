@@ -1,6 +1,7 @@
 import { supabase } from "../lib/supabase.js";
-import { APP_TITLE, EVENT_ID, ADMIN_PASSCODE } from "../config.js";
+import { APP_TITLE, EVENT_ID } from "../config.js";
 import { MEMORIES, MEMORY_CATEGORIES } from "../memories.js";
+import { isUnlocked, tryUnlock } from "./gate.js";
 
 const $ = (s) => document.querySelector(s);
 
@@ -16,12 +17,15 @@ function toast(msg, isError = false) {
   setTimeout(() => t.classList.remove("show"), 2400);
 }
 
-// ---- 合言葉ゲート ----
+// ---- 合言葉ゲート（js/gate.js 共通。一度認証すれば次回から入力不要） ----
+function openPanel() {
+  $("#gate").style.display = "none";
+  $("#panel").style.display = "block";
+  refresh();
+}
 $("#unlock").addEventListener("click", () => {
-  if ($("#pass").value === ADMIN_PASSCODE) {
-    $("#gate").style.display = "none";
-    $("#panel").style.display = "block";
-    refresh();
+  if (tryUnlock($("#pass").value)) {
+    openPanel();
   } else {
     toast("合言葉が違います", true);
   }
@@ -29,6 +33,8 @@ $("#unlock").addEventListener("click", () => {
 $("#pass").addEventListener("keydown", (e) => {
   if (e.key === "Enter") $("#unlock").click();
 });
+// このブラウザで認証済みなら、合言葉入力を飛ばしてすぐ開く
+if (isUnlocked()) openPanel();
 
 // ---- 受付状態 ----
 async function refresh() {

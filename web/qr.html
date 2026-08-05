@@ -6,24 +6,85 @@
   <title>投票QR</title>
   <link rel="stylesheet" href="./css/style.css" />
   <style>
-    .qr-box { text-align: center; padding: 24px; }
-    #qr { background: #fff; display: inline-block; padding: 20px; border-radius: 20px; }
-    .url { word-break: break-all; font-size: 1.1rem; margin-top: 16px; }
+    /* ---- この画面専用のスタイル ---- */
+
+    /* 合言葉カード：会場の人が読めるように大きく */
+    .pass-card { text-align: center; }
+    .pass-label { color: var(--muted); font-weight: 700; margin-bottom: 4px; }
+    .pass-value {
+      font-size: 3rem; font-weight: 900; letter-spacing: .12em;
+      color: var(--accent2);
+      overflow-wrap: anywhere; /* 長い合言葉でも見切れず折り返す */
+    }
+
+    /* 投票のやり方 */
+    .steps-title { font-weight: 800; margin-bottom: 8px; }
+    ol.howto { margin: 0; padding-left: 1.5em; }
+    ol.howto li { margin: 8px 0; line-height: 1.5; }
+
+    /* QRコード */
+    .qr-box { text-align: center; padding: 20px; }
+    #qr { background: #fff; display: inline-block; padding: 16px; border-radius: 20px; }
+    /* 大きめに生成して CSS で縮める（img か canvas かはライブラリ任せ） */
+    #qr img, #qr canvas { width: min(70vw, 320px); height: auto; }
+    .url { word-break: break-all; font-size: 1rem; margin-top: 12px; }
+
+    /* ---- 横画面（プロジェクタ投影用）----
+       左：合言葉＋投票のやり方 ／ 右：QRコード（大きく）
+       文字は高さ基準（vh）にして、スクロールなしで1画面に収める */
+    @media (orientation: landscape) {
+      body { height: 100vh; height: 100dvh; display: flex; flex-direction: column; overflow: hidden; }
+      .wrap { flex: 1; min-height: 0; max-width: none; width: 100%;
+              padding: 1.5vh 3vw; display: flex; flex-direction: column; }
+      h1 { font-size: 3.6vh; margin: 0 0 .5vh; }
+      .sub { font-size: 2vh; margin: 0 0 1vh; }
+      .qr-columns { flex: 1; min-height: 0; display: grid;
+                    grid-template-columns: 1fr 1fr; gap: 2vw; align-items: center; }
+      .pass-card { margin-bottom: 1.5vh; padding: 2.5vh 2vw; }
+      .pass-label { font-size: 2.6vh; }
+      .pass-value { font-size: 8vh; }
+      .steps-card { padding: 2.5vh 2vw; margin: 0; }
+      .steps-title { font-size: 2.8vh; }
+      ol.howto li { font-size: 3vh; margin: 1.2vh 0; }
+      .qr-box { padding: 2vh; margin: 0; }
+      #qr { padding: 1.5vh; }
+      #qr img, #qr canvas { width: min(58vh, 38vw); }
+      .url { font-size: 1.8vh; margin-top: 1vh; }
+    }
   </style>
 </head>
 <body>
   <div class="wrap">
     <h1 id="app-title">📱 投票はこちらから</h1>
     <p class="sub">スマホのカメラでQRを読み取ってください</p>
-    <div class="card qr-box">
-      <div id="qr"></div>
-      <div class="url muted" id="url"></div>
+
+    <div class="qr-columns">
+      <!-- 縦画面では上から順に：合言葉 → 説明 → QR。横画面では左右2カラム -->
+      <div class="qr-info">
+        <div class="card pass-card">
+          <div class="pass-label">投票の合言葉</div>
+          <div class="pass-value" id="pass-value"></div>
+        </div>
+        <div class="card steps-card">
+          <div class="steps-title">投票のやり方</div>
+          <ol class="howto">
+            <li>自分の名前を選ぶ</li>
+            <li>各題目で1位・2位・3位を選ぶ</li>
+            <li>1位=3点、2位=2点、3位=1点のポイント制で集計されます</li>
+          </ol>
+        </div>
+      </div>
+
+      <div class="card qr-box">
+        <div id="qr"></div>
+        <div class="url muted" id="url"></div>
+      </div>
     </div>
   </div>
 
   <script src="https://cdn.jsdelivr.net/gh/davidshimjs/qrcodejs@master/qrcode.min.js"></script>
   <script type="module">
-    import { APP_TITLE, VOTE_URL } from "./config.js";
+    import { APP_TITLE, VOTE_URL, VOTER_PASSCODE } from "./config.js";
     import { setupNav } from "./js/nav.js";
 
     // 画面上部の共通ナビゲーションバー
@@ -33,12 +94,16 @@
     document.title = `${APP_TITLE} 投票QR`;
     document.getElementById("app-title").textContent = `📱 ${APP_TITLE} 投票はこちらから`;
 
+    // 投票用の合言葉（config.js の VOTER_PASSCODE）を大きく表示
+    document.getElementById("pass-value").textContent = VOTER_PASSCODE;
+
     const url = VOTE_URL || new URL("./index.html", location.href).href;
     document.getElementById("url").textContent = url;
+    // 512px と大きめに作って CSS で縮小（プロジェクタでもくっきり映る）
     new QRCode(document.getElementById("qr"), {
       text: url,
-      width: 320,
-      height: 320,
+      width: 512,
+      height: 512,
       correctLevel: QRCode.CorrectLevel.M,
     });
   </script>

@@ -7,9 +7,24 @@
   <link rel="stylesheet" href="./css/style.css" />
 </head>
 <body>
+  <!-- 合言葉ゲート（管理画面と同じ合言葉・同じ仕組み。
+       一度認証すれば同じブラウザでは次回から入力不要） -->
+  <div class="wrap" id="gate-wrap" style="display:none">
+    <h1 id="app-title">📖 思い出発表</h1>
+    <div id="gate" class="card">
+      <h2>🔒 思い出発表はロック中です</h2>
+      <label class="fld">
+        <span>合言葉</span>
+        <input id="pass" type="password" placeholder="管理画面と同じ合言葉" />
+      </label>
+      <button id="unlock">解除</button>
+      <p class="muted">config.js の ADMIN_PASSCODE と同じ合言葉です。</p>
+    </div>
+  </div>
+
   <!-- 発表画面（results.html の発表モードと同じ見た目を使い回す）。
-       このページは開いた瞬間から発表モードなので、常に全画面表示 -->
-  <div id="presentation">
+       認証が済むと全画面で表示される -->
+  <div id="presentation" style="display:none">
     <button id="p-back" title="1つ戻る（キーボードの ← でも戻れます）">← 戻る</button>
     <div id="p-stage"></div>
     <div id="p-hint"></div>

@@ -1,6 +1,7 @@
 import { supabase } from "../lib/supabase.js";
 import { APP_TITLE, EVENT_ID, RESULTS_TOP_N, POLL_INTERVAL_MS } from "../config.js";
 import { setupNav, navPresenting } from "./nav.js";
+import { isUnlocked, tryUnlock } from "./gate.js";
 
 const $ = (s) => document.querySelector(s);
 
@@ -381,4 +382,29 @@ function fireConfetti() {
   confettiAnim = requestAnimationFrame(tick);
 }
 
-main();
+// =============================================================
+// 合言葉ゲート（js/gate.js 共通。管理画面と同じ合言葉）
+// 認証が済むまで結果は読み込まない
+// =============================================================
+function unlockAndStart() {
+  $("#gate").style.display = "none";
+  $("#content").style.display = "block";
+  main();
+}
+
+if (isUnlocked()) {
+  // このブラウザで認証済みなら、すぐ表示
+  unlockAndStart();
+} else {
+  $("#gate").style.display = "block";
+  $("#unlock").addEventListener("click", () => {
+    if (tryUnlock($("#pass").value)) {
+      unlockAndStart();
+    } else {
+      alert("合言葉が違います");
+    }
+  });
+  $("#pass").addEventListener("keydown", (e) => {
+    if (e.key === "Enter") $("#unlock").click();
+  });
+}
