@@ -112,8 +112,13 @@ create policy "write settings"     on settings     for all using (true) with che
 -- =============================================================
 create table if not exists memory_settings (
   event_id     text primary key,
-  selected_ids jsonb not null default '[]'::jsonb
+  selected_ids jsonb not null default '[]'::jsonb,
+  -- 問題ごとの発表方法（例 {"q1":"B"}）。A=一括表示（デフォルト）/ B=1位を伏せる
+  reveal_modes jsonb not null default '{}'::jsonb
 );
+
+-- すでにテーブルを作ってある場合は、この1行で列だけ追加できる
+alter table memory_settings add column if not exists reveal_modes jsonb not null default '{}'::jsonb;
 
 alter table memory_settings enable row level security;
 

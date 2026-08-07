@@ -1,13 +1,14 @@
 // =============================================================
 // 思い出ランキング発表画面（memories.html 用）
-// - 発表する項目は Supabase の memory_settings.selected_ids から読む
-//   （どれをどの順で発表するかは admin.html で設定する）
-// - 発表は2段階方式：
-//     1段階目 … 題目のタイトルだけを画面いっぱいに表示
-//     2段階目 … タップすると 1位〜3位（pair は男女）を一度に全部表示
-//   もう一度タップすると次の題目のタイトルへ進む
-// - best3 の答えが開いた瞬間は紙吹雪（1位が見える瞬間なので）
-// - 「← 戻る」で1つ戻れる。開くには管理画面と同じ合言葉が必要
+// - 発表する項目・発表方法は Supabase の memory_settings から読む
+//   （admin.html の「思い出ランキング発表の設定」で決める）
+// - 発表方法は問題ごとに2種類（管理画面のA/Bトグルで切り替え）：
+//     A. 一括表示   … タップで題目と全順位（1位含む）を一度に表示
+//     B. 1位を伏せる … タップで題目＋2位3位を表示、1位は「？」で伏せる
+//                      → もう一度タップで1位を発表（pair は男女とも伏せる）
+// - best3 の1位が見えた瞬間は紙吹雪
+// - 画面のどこをタップしても進む。「← 戻る」で1つ戻れる
+// - 発表中に管理画面でA/Bを変えても、数秒で自動反映される
 // =============================================================
 import { supabase } from "../lib/supabase.js";
 import { APP_TITLE, EVENT_ID } from "../config.js";
@@ -26,19 +27,28 @@ setupNav("memories");
 // 発表する項目のリスト（管理画面で選んだ順）
 let items = [];
 
+// 問題ごとの発表方法（{ q1: "B", ... }。書いていない問題は A）
+let revealModes = {};
+
 // 合言葉を通って発表が始まったら true
 let started = false;
 
-// 今どこまでタップしたか。
-// step 0 = 導入画面。以降は1項目につき2ステップ（タイトル → 全部表示）
-let step = 0;
-let totalSteps = 0;
+// 今どの画面にいるか（タップで進む位置）
+//   { type: "intro" }                     … 導入画面
+//   { type: "item", index: n, phase: p }  … n番目の項目。phase 0=1画面目, 1=1位発表
+//   { type: "end" }                       … 終了画面
+let pos = { type: "intro" };
 
-// 管理画面で保存した selected_ids を読み込んで、発表リストを作る
+// この項目の発表方法を返す（設定が無ければ A）
+function modeOf(item) {
+  return revealModes[item.id] === "B" ? "B" : "A";
+}
+
+// 管理画面で保存した設定を読み込んで、発表リストを作る
 async function loadItems() {
   const { data, error } = await supabase
     .from("memory_settings")
-    .select("selected_ids")
+    .select("selected_ids, reveal_modes")
     .eq("event_id", EVENT_ID)
     .maybeSingle();
   if (error) console.error(error);
@@ -46,52 +56,71 @@ async function loadItems() {
   const ids = data?.selected_ids || [];
   // id から実データを引く（memories.js に無い id は無視する）
   items = ids.map((id) => MEMORIES.find((m) => m.id === id)).filter(Boolean);
-
-  // タップの総数 = 導入画面の1回 + 各項目2回（タイトル→全部表示）
-  totalSteps = 1 + items.length * 2;
-}
-
-// 今の step から「導入 / 何番目の項目のどの段階か / 終了」を計算する
-function currentState() {
-  if (step === 0) return { intro: true };
-  const s = step - 1;
-  const index = Math.floor(s / 2); // 2ステップごとに次の項目へ
-  if (index >= items.length) return { finished: true };
-  return { index, revealed: s % 2 === 1 }; // 偶数=タイトルだけ、奇数=全部表示
+  revealModes = data?.reveal_modes || {};
 }
 
 // タップで1つ進める
 function forward() {
   if (!started || !items.length) return;
-  if (step >= totalSteps) return; // 終了画面より先はない
-  const before = currentState();
-  step++;
-  const after = currentState();
+  if (pos.type === "end") return; // 終了画面より先はない
 
-  // 「タイトルだけ → 全部表示」に切り替わった瞬間か？
-  const justRevealed =
-    !before.intro && !before.finished && !before.revealed &&
-    !after.intro && !after.finished && after.revealed;
+  // 導入 → 最初の項目へ
+  if (pos.type === "intro") {
+    pos = { type: "item", index: 0, phase: 0 };
+    render("show");
+    confettiOnShow(items[0]);
+    return;
+  }
 
-  render(justRevealed);
+  const item = items[pos.index];
 
-  // best3 の答えが開いた瞬間（＝1位が見える瞬間）と、全発表の終了で紙吹雪！
-  if (justRevealed && items[after.index].type === "best3") {
-    fireConfetti();
-  } else if (after.finished && !before.finished) {
+  // B（1位を伏せる）の1画面目 → 1位を発表
+  if (pos.phase === 0 && modeOf(item) === "B") {
+    pos = { type: "item", index: pos.index, phase: 1 };
+    render("reveal");
+    if (item.type === "best3") fireConfetti(); // 1位が見えた瞬間！
+    return;
+  }
+
+  // 次の項目へ（最後なら終了画面へ）
+  if (pos.index + 1 < items.length) {
+    pos = { type: "item", index: pos.index + 1, phase: 0 };
+    render("show");
+    confettiOnShow(items[pos.index]);
+  } else {
+    pos = { type: "end" };
+    render(null);
     fireConfetti();
   }
 }
 
-// 誤タップ用：1つ戻る（戻るときはアニメーションなし）
-function back() {
-  if (!started || step <= 0) return;
-  step--;
-  render(false);
+// A（一括表示）は表示した瞬間に1位も見えるので、best3 なら紙吹雪
+function confettiOnShow(item) {
+  if (modeOf(item) === "A" && item.type === "best3") fireConfetti();
 }
 
-// 画面を描く
-function render(justRevealed) {
+// その項目の「最後の画面」の位置（戻るときに使う。Bは2画面目まである）
+function lastPhaseOf(i) {
+  return { type: "item", index: i, phase: modeOf(items[i]) === "B" ? 1 : 0 };
+}
+
+// 誤タップ用：1つ戻る（戻るときはアニメーションなし）
+function back() {
+  if (!started || pos.type === "intro") return;
+  if (pos.type === "end") {
+    pos = items.length ? lastPhaseOf(items.length - 1) : { type: "intro" };
+  } else if (pos.phase === 1) {
+    pos = { type: "item", index: pos.index, phase: 0 };
+  } else if (pos.index > 0) {
+    pos = lastPhaseOf(pos.index - 1);
+  } else {
+    pos = { type: "intro" };
+  }
+  render(null);
+}
+
+// 画面を描く。anim は "show"=全体をめくる / "reveal"=伏せていた所だけめくる / null=なし
+function render(anim) {
   const stage = $("#p-stage");
 
   // 発表する項目が選ばれていないとき
@@ -106,10 +135,8 @@ function render(justRevealed) {
     return;
   }
 
-  const st = currentState();
-
   // ---- 導入画面 ----
-  if (st.intro) {
+  if (pos.type === "intro") {
     stage.innerHTML = `
       <div class="p-finale p-intro">
         <div class="p-finale-emoji">📖✨</div>
@@ -121,7 +148,7 @@ function render(justRevealed) {
   }
 
   // ---- 終了画面 ----
-  if (st.finished) {
+  if (pos.type === "end") {
     stage.innerHTML = `
       <div class="p-finale">
         <div class="p-finale-emoji">🎉📖🎉</div>
@@ -132,57 +159,73 @@ function render(justRevealed) {
     return;
   }
 
-  const item = items[st.index];
+  // ---- 項目の画面 ----
+  const item = items[pos.index];
+  // 1位（pair は男女とも）を伏せているか？
+  const masked = modeOf(item) === "B" && pos.phase === 0;
 
-  // ---- 1段階目：タイトルだけを画面いっぱいに ----
-  if (!st.revealed) {
-    stage.innerHTML = `
-      <div class="p-solo">
-        <div class="p-solo-cat">${item.category} — ${st.index + 1} / ${items.length}</div>
-        <div class="p-solo-title">${item.title}</div>
-      </div>`;
-    $("#p-hint").textContent = "画面をタップして結果発表 ▶";
-    return;
-  }
-
-  // ---- 2段階目：1位〜3位（pair は男女）を一度に全部表示 ----
-  let html = `<div class="p-award-label">${item.category} — ${st.index + 1} / ${items.length}</div>`;
+  let html = `<div class="p-award-label">${item.category} — ${pos.index + 1} / ${items.length}</div>`;
   html += `<div class="p-title">${item.title}</div>`;
   html += `<div class="p-list">`;
 
-  // 開いた瞬間は、行を上から順に少しずつ遅らせてめくる（見栄え用）
-  const delay = (i) => (justRevealed ? ` style="animation-delay:${i * 0.18}s"` : "");
-  const flip = justRevealed ? " flip" : "";
+  // めくるアニメーションの付け方：
+  //   "show"   … 全行を上から順に少しずつ遅らせてめくる
+  //   "reveal" … 伏せていた行（1位／男女）だけめくる
+  const flipAll = anim === "show" ? " flip" : "";
+  const flipRevealed = anim === "reveal" ? " flip" : "";
+  const delay = (i) => (anim === "show" ? ` style="animation-delay:${i * 0.18}s"` : "");
 
   if (item.type === "best3") {
     for (let rank = 1; rank <= 3; rank++) {
-      const cls = `p-rank pr${rank} open` + (rank === 1 ? " p-first" : "") + flip;
-      const crown = rank === 1 ? "👑 " : "";
-      html += `
-        <div class="${cls}"${delay(rank - 1)}>
-          <div class="p-pos">${rank}位</div>
-          <div class="p-name">${crown}${item.ranks[rank - 1]}</div>
-        </div>`;
+      const isTop = rank === 1;
+      if (isTop && masked) {
+        // 1位はまだヒミツ。大きめの文字＋目立つ枠で「？」
+        html += `
+          <div class="p-rank pr1 p-mystery${flipAll}"${delay(0)}>
+            <div class="p-pos">1位</div>
+            <div class="p-name">？？？</div>
+          </div>`;
+      } else {
+        const cls = `p-rank pr${rank} open` +
+          (isTop ? " p-first" : "") +
+          (isTop ? flipRevealed : "") + flipAll;
+        html += `
+          <div class="${cls}"${delay(rank - 1)}>
+            <div class="p-pos">${rank}位</div>
+            <div class="p-name">${isTop ? "👑 " : ""}${item.ranks[rank - 1]}</div>
+          </div>`;
+      }
     }
   } else {
-    // pair：男 → 女 の順に並べて一度に表示
+    // pair：男 → 女。Bのときは両方「？」で伏せて、タップで両方発表
     const rows = [
       { label: "男", cls: "pr-m", name: item.male },
       { label: "女", cls: "pr-f", name: item.female },
     ];
     rows.forEach((r, i) => {
-      html += `
-        <div class="p-rank ${r.cls} open${flip}"${delay(i)}>
-          <div class="p-pos">${r.label}</div>
-          <div class="p-name">${r.name}</div>
-        </div>`;
+      if (masked) {
+        html += `
+          <div class="p-rank ${r.cls} p-mystery${flipAll}"${delay(i)}>
+            <div class="p-pos">${r.label}</div>
+            <div class="p-name">？？？</div>
+          </div>`;
+      } else {
+        html += `
+          <div class="p-rank ${r.cls} open${flipAll}${flipRevealed}"${delay(i)}>
+            <div class="p-pos">${r.label}</div>
+            <div class="p-name">${r.name}</div>
+          </div>`;
+      }
     });
   }
   html += `</div>`;
   stage.innerHTML = html;
 
   // 画面下の案内文
-  if (st.index + 1 < items.length) {
+  if (masked) {
+    $("#p-hint").textContent =
+      item.type === "best3" ? "タップで1位を発表 ▶" : "タップで男女を発表 ▶";
+  } else if (pos.index + 1 < items.length) {
     $("#p-hint").textContent = "タップで次の題目へ ▶";
   } else {
     $("#p-hint").textContent = "タップで発表終了へ ▶";
@@ -210,6 +253,25 @@ document.addEventListener("keydown", (e) => {
     forward();
   }
 });
+
+// =============================================================
+// 発表中でも、管理画面でのA/B変更を数秒ごとに取り込む
+// ※ 発表順（selected_ids）は途中で変わると進行位置がズレるので、
+//    開いたときのまま固定。A/B（reveal_modes）だけ反映する
+// =============================================================
+setInterval(async () => {
+  if (!started || !items.length) return;
+  const { data } = await supabase
+    .from("memory_settings")
+    .select("reveal_modes")
+    .eq("event_id", EVENT_ID)
+    .maybeSingle();
+  const next = data?.reveal_modes || {};
+  if (JSON.stringify(next) !== JSON.stringify(revealModes)) {
+    revealModes = next;
+    render(null); // 表示中の画面にもすぐ反映（アニメーションなしで描き直し）
+  }
+}, 5000);
 
 // =============================================================
 // 紙吹雪エフェクト（results.js と同じ簡易版）
@@ -268,7 +330,7 @@ async function start() {
   $("#presentation").style.display = "flex";
   navPresenting(true); // 発表中はナビバーを隠す（☰ボタンで再表示できる）
   await loadItems();
-  render(false);
+  render(null);
 }
 
 if (isUnlocked()) {

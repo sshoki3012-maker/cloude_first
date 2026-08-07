@@ -207,11 +207,16 @@ $("#add-person").addEventListener("click", async () => {
 // 選択中の項目 id の配列。並び順がそのまま発表順になる
 let memSelected = [];
 
+// 問題ごとの発表方法（{ q1: "B", ... }）。
+//   A = 一括表示（タップで題目と全順位を一度に表示）← デフォルト
+//   B = 1位を伏せる（2位3位を見せて、もう1タップで1位を発表）
+let memModes = {};
+
 // 保存済みの選択を読み込む
 async function loadMemorySettings() {
   const { data, error } = await supabase
     .from("memory_settings")
-    .select("selected_ids")
+    .select("selected_ids, reveal_modes")
     .eq("event_id", EVENT_ID)
     .maybeSingle();
   if (error) {
@@ -222,6 +227,7 @@ async function loadMemorySettings() {
   memSelected = (data?.selected_ids || []).filter((id) =>
     MEMORIES.some((m) => m.id === id)
   );
+  memModes = data?.reveal_modes || {};
   renderMemorySection();
 }
 
@@ -253,6 +259,7 @@ function renderMemorySection() {
 
     MEMORIES.filter((m) => m.category === cat).forEach((m) => {
       const checked = memSelected.includes(m.id);
+      const modeB = memModes[m.id] === "B"; // 指定なしは A（一括表示）
       const row = document.createElement("label");
       row.className = "mem-item" + (checked ? " checked" : "");
       row.innerHTML = `
@@ -260,6 +267,11 @@ function renderMemorySection() {
         <span class="mem-item-body">
           <span class="mem-item-title">${m.title}</span>
           ${checked ? `<span class="mem-item-detail">${memDetailText(m)}</span>` : ""}
+          ${checked ? `
+            <span class="mem-mode">
+              <button type="button" data-mode="A" class="${modeB ? "" : "active"}">A 一括表示</button>
+              <button type="button" data-mode="B" class="${modeB ? "active" : ""}">B 1位を伏せる</button>
+            </span>` : ""}
         </span>`;
       row.querySelector("input").addEventListener("change", (e) => {
         if (e.target.checked) {
@@ -268,6 +280,19 @@ function renderMemorySection() {
           memSelected = memSelected.filter((id) => id !== m.id);
         }
         renderMemorySection();
+      });
+      // A/B トグル（ラベル内のボタンなので、チェックボックスが反応しないよう止める）
+      row.querySelectorAll(".mem-mode button").forEach((btn) => {
+        btn.addEventListener("click", (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          if (btn.dataset.mode === "B") {
+            memModes[m.id] = "B";
+          } else {
+            delete memModes[m.id]; // A はデフォルトなので保存データからは消す
+          }
+          renderMemorySection();
+        });
       });
       box.appendChild(row);
     });
@@ -285,9 +310,10 @@ function renderMemorySection() {
     const m = MEMORIES.find((x) => x.id === id);
     const row = document.createElement("div");
     row.className = "mem-order-item";
+    const modeTag = memModes[id] === "B" ? `<span class="mem-mode-tag">B 1位伏せ</span>` : "";
     row.innerHTML = `
       <span class="mem-order-num">${i + 1}</span>
-      <span class="mem-order-title">${m.title}<span class="muted"> （${m.category}）</span></span>
+      <span class="mem-order-title">${m.title}<span class="muted"> （${m.category}）</span>${modeTag}</span>
       <button class="btn-sm btn-ghost" data-act="up" ${i === 0 ? "disabled" : ""}>↑</button>
       <button class="btn-sm btn-ghost" data-act="down" ${i === memSelected.length - 1 ? "disabled" : ""}>↓</button>`;
     // ↑ボタン：1つ上の項目と入れ替える
@@ -304,14 +330,14 @@ function renderMemorySection() {
   });
 }
 
-// 保存：selected_ids を memory_settings に書き込む（無ければ行ごと作る）
+// 保存：選択・発表順・A/B設定を memory_settings に書き込む（無ければ行ごと作る）
 $("#mem-save").addEventListener("click", async () => {
   const { error } = await supabase
     .from("memory_settings")
-    .upsert({ event_id: EVENT_ID, selected_ids: memSelected });
+    .upsert({ event_id: EVENT_ID, selected_ids: memSelected, reveal_modes: memModes });
   if (error) {
     console.error(error);
-    return toast("保存失敗（memory_settings テーブルはありますか？）", true);
+    return toast("保存失敗（reveal_modes 列は追加済みですか？）", true);
   }
   toast(`保存しました（${memSelected.length}項目）`);
 });

@@ -255,6 +255,20 @@ a { color: var(--accent); }
   line-height: 1.25; overflow-wrap: anywhere;
 }
 
+/* 思い出発表：伏せている1位（男女）の枠。
+   周囲より大きめの文字＋目立つ枠で「まだヒミツ」感を出す */
+.p-rank.p-mystery {
+  background: linear-gradient(135deg, #fff6dd, #ffe9b8);
+  border: 3px dashed var(--gold);
+  box-shadow: 0 0 34px rgba(217, 138, 31, .4);
+  transform: scale(1.05);
+}
+.p-rank.p-mystery .p-name {
+  color: var(--accent2);
+  font-size: 3.4rem;           /* 他の行より大きく */
+  letter-spacing: .15em;
+}
+
 /* 投票がなかったお題・締め画面 */
 .p-empty { text-align: center; font-size: 1.8rem; color: var(--muted); }
 .p-finale { text-align: center; }
@@ -291,6 +305,7 @@ a { color: var(--accent); }
   .p-finale-title { font-size: 2.6rem; }
   .p-solo-title { font-size: 2.3rem; }
   .p-solo-cat { font-size: 1rem; }
+  .p-rank.p-mystery .p-name { font-size: 2rem; }
 }
 
 /* ===== 共通ナビゲーションバー（全画面の上部） ===== */
@@ -363,6 +378,23 @@ a { color: var(--accent); }
 }
 .mem-order-title { flex: 1; font-weight: 600; font-size: .95rem; }
 
+/* 発表方法のA/Bトグル（チェックした項目に表示） */
+.mem-mode {
+  display: inline-flex; margin-top: 6px; width: fit-content;
+  border: 1px solid rgba(0,0,0,.2); border-radius: 999px; overflow: hidden;
+}
+.mem-mode button {
+  padding: 5px 12px; font-size: .75rem; font-weight: 700;
+  background: var(--card); color: var(--muted); border-radius: 0;
+}
+.mem-mode button.active { background: var(--accent); color: #fff; }
+/* 発表順リストに出す「B 1位伏せ」の目印 */
+.mem-mode-tag {
+  display: inline-block; margin-left: 6px; padding: 1px 8px;
+  border-radius: 999px; background: var(--gold); color: #fff;
+  font-size: .7rem; font-weight: 800; vertical-align: middle;
+}
+
 /* ===== 思い出発表：男女ペアの行の色分け ===== */
 .pr-m .p-pos { color: #4a7fd4; }  /* 男子は青系 */
 .pr-f .p-pos { color: #e5484d; }  /* 女子は赤系 */
@@ -416,6 +448,9 @@ a { color: var(--accent); }
   .p-solo { grid-column: 1 / -1; }
   .p-solo-cat { font-size: 3vh; margin-bottom: 2vh; }
   .p-solo-title { font-size: 11vh; }
+
+  /* 伏せている1位の枠も高さ基準で */
+  .p-rank.p-mystery .p-name { font-size: 6.8vh; }
 
   /* 画面下のヒントも高さ基準で小さめに */
   #p-hint { bottom: 1.2vh; font-size: 2.2vh; }
