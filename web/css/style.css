@@ -423,37 +423,37 @@ a { color: var(--accent); }
     max-width: none;
     height: 100%;
   }
-  .p-award-label { grid-area: label; align-self: end; font-size: 2.6vh; margin: 0; }
-  .p-title { grid-area: title; align-self: start; font-size: 6.5vh; margin: 0; }
-  .p-list { grid-area: list; gap: 1.8vh; }
+  .p-award-label { grid-area: label; align-self: end; font-size: 3.2vh; margin: 0; }
+  .p-title { grid-area: title; align-self: start; font-size: 9vh; margin: 0; }
+  .p-list { grid-area: list; gap: 2vh; }
 
   /* 順位の行：上下の余白を詰めて、高さ基準の文字サイズにする */
-  .p-rank { padding: 1.6vh 2.5vw; gap: 2vw; border-radius: 2.4vh; }
-  .p-pos { font-size: 4vh; min-width: 11vh; }
-  .p-tie { font-size: 1.8vh; }
-  .p-name { font-size: 5.6vh; }
-  .p-pts { font-size: 4vh; }
-  .p-pts span { font-size: 1.8vh; }
-  .p-rank.p-first { padding: 2.2vh 2.5vw; }
-  .p-rank.p-first .p-name { font-size: 6.6vh; }
+  .p-rank { padding: 2vh 2.5vw; gap: 2vw; border-radius: 2.4vh; }
+  .p-pos { font-size: 6vh; min-width: 14vh; }
+  .p-tie { font-size: 2.2vh; }
+  .p-name { font-size: 9vh; }
+  .p-pts { font-size: 6vh; }
+  .p-pts span { font-size: 2.4vh; }
+  .p-rank.p-first { padding: 2.4vh 2.5vw; }
+  .p-rank.p-first .p-name { font-size: 10.5vh; }
 
   /* 導入・締め・投票なしの画面は左右いっぱいを使う（1カラム扱い） */
   .p-finale, .p-empty { grid-column: 1 / -1; }
-  .p-finale-emoji { font-size: 8vh; }
-  .p-finale-title { font-size: 10vh; margin: 1.5vh 0; }
-  .p-finale-sub { font-size: 3.6vh; }
-  .p-empty { font-size: 3.6vh; }
+  .p-finale-emoji { font-size: 10vh; }
+  .p-finale-title { font-size: 13vh; margin: 1.5vh 0; }
+  .p-finale-sub { font-size: 4.5vh; }
+  .p-empty { font-size: 4.5vh; }
 
   /* 思い出発表の「タイトルだけ」画面も高さ基準で大きく */
   .p-solo { grid-column: 1 / -1; }
-  .p-solo-cat { font-size: 3vh; margin-bottom: 2vh; }
-  .p-solo-title { font-size: 11vh; }
+  .p-solo-cat { font-size: 3.8vh; margin-bottom: 2vh; }
+  .p-solo-title { font-size: 14vh; }
 
   /* 伏せている1位の枠も高さ基準で */
-  .p-rank.p-mystery .p-name { font-size: 6.8vh; }
+  .p-rank.p-mystery .p-name { font-size: 10.5vh; }
 
-  /* 画面下のヒントも高さ基準で小さめに */
-  #p-hint { bottom: 1.2vh; font-size: 2.2vh; }
+  /* 画面下のヒントも高さ基準で */
+  #p-hint { bottom: 1.2vh; font-size: 2.6vh; }
 
   /* ---- ここから発表画面以外（入口・管理・結果LIVE）の横画面調整 ---- */
 
