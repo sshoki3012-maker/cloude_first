@@ -210,7 +210,7 @@ function render(anim) {
         html += `
           <div class="${cls}"${delay(rank - 1)}>
             <div class="p-pos">${rank}位</div>
-            <div class="p-name">${isTop ? "👑 " : ""}${item.ranks[rank - 1]}</div>
+            <div class="p-name">${isTop ? `<span class="p-crown">👑</span>` : ""}${item.ranks[rank - 1]}</div>
           </div>`;
       }
     }

@@ -279,7 +279,8 @@ function renderPresentation(justIdx) {
           (revealed && g.rank === 1 ? " p-first" : "") +
           (justNow ? " flip" : "");
         if (revealed) {
-          const crown = g.rank === 1 ? "👑 " : "";
+          // 王冠は名前より小さく表示（1行に収めるため。見た目は css の .p-crown）
+          const crown = g.rank === 1 ? `<span class="p-crown">👑</span>` : "";
           html += `
             <div class="${cls}">
               <div class="p-pos">${g.rank}位${tie}</div>

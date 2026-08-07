@@ -214,7 +214,9 @@ a { color: var(--accent); }
 .pr1 .p-pos { color: var(--gold); }
 .pr2 .p-pos { color: var(--silver); }
 .pr3 .p-pos { color: var(--bronze); }
-.p-name { flex: 1; font-size: 2.8rem; font-weight: 900; line-height: 1.2; }
+.p-name { flex: 1; font-size: 2.8rem; font-weight: 900; line-height: 1.2; white-space: nowrap; }
+/* 1位に付く王冠。名前が2行にならないよう、文字より小さめにする */
+.p-crown { font-size: .65em; margin-right: .12em; }
 .p-pts { font-size: 2.4rem; font-weight: 900; white-space: nowrap; }
 .p-pts span { font-size: 1.1rem; }
 
@@ -435,7 +437,7 @@ a { color: var(--accent); }
   .p-pts { font-size: 6vh; }
   .p-pts span { font-size: 2.4vh; }
   .p-rank.p-first { padding: 2.4vh 2.5vw; }
-  .p-rank.p-first .p-name { font-size: 10.5vh; }
+  .p-rank.p-first .p-name { font-size: 9.5vh; }
 
   /* 導入・締め・投票なしの画面は左右いっぱいを使う（1カラム扱い） */
   .p-finale, .p-empty { grid-column: 1 / -1; }
