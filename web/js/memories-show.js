@@ -35,7 +35,10 @@ let started = false;
 
 // 今どの画面にいるか（タップで進む位置）
 //   { type: "intro" }                     … 導入画面
-//   { type: "item", index: n, phase: p }  … n番目の項目。phase 0=1画面目, 1=1位発表
+//   { type: "item", index: n, phase: p }  … n番目の項目
+//     phase 0 = タイトルだけ大きく表示
+//     phase 1 = 順位を表示（A=全部 / B=2位3位のみ、1位は「？」）
+//     phase 2 = 1位を発表（B のみ）
 //   { type: "end" }                       … 終了画面
 let pos = { type: "intro" };
 
@@ -64,19 +67,27 @@ function forward() {
   if (!started || !items.length) return;
   if (pos.type === "end") return; // 終了画面より先はない
 
-  // 導入 → 最初の項目へ
+  // 導入 → 最初の項目のタイトル画面へ
   if (pos.type === "intro") {
     pos = { type: "item", index: 0, phase: 0 };
-    render("show");
-    confettiOnShow(items[0]);
+    render(null);
     return;
   }
 
   const item = items[pos.index];
 
-  // B（1位を伏せる）の1画面目 → 1位を発表
-  if (pos.phase === 0 && modeOf(item) === "B") {
+  // タイトル画面 → 順位の表示（A=全部 / B=1位は伏せたまま）
+  if (pos.phase === 0) {
     pos = { type: "item", index: pos.index, phase: 1 };
+    render("show");
+    // A（一括表示）はこの瞬間に1位も見えるので、best3 なら紙吹雪
+    if (modeOf(item) === "A" && item.type === "best3") fireConfetti();
+    return;
+  }
+
+  // B（1位を伏せる）の順位画面 → 1位を発表
+  if (pos.phase === 1 && modeOf(item) === "B") {
+    pos = { type: "item", index: pos.index, phase: 2 };
     render("reveal");
     if (item.type === "best3") fireConfetti(); // 1位が見えた瞬間！
     return;
@@ -85,8 +96,7 @@ function forward() {
   // 次の項目へ（最後なら終了画面へ）
   if (pos.index + 1 < items.length) {
     pos = { type: "item", index: pos.index + 1, phase: 0 };
-    render("show");
-    confettiOnShow(items[pos.index]);
+    render(null);
   } else {
     pos = { type: "end" };
     render(null);
@@ -94,14 +104,9 @@ function forward() {
   }
 }
 
-// A（一括表示）は表示した瞬間に1位も見えるので、best3 なら紙吹雪
-function confettiOnShow(item) {
-  if (modeOf(item) === "A" && item.type === "best3") fireConfetti();
-}
-
-// その項目の「最後の画面」の位置（戻るときに使う。Bは2画面目まである）
+// その項目の「最後の画面」の位置（戻るときに使う。Bは phase 2 まである）
 function lastPhaseOf(i) {
-  return { type: "item", index: i, phase: modeOf(items[i]) === "B" ? 1 : 0 };
+  return { type: "item", index: i, phase: modeOf(items[i]) === "B" ? 2 : 1 };
 }
 
 // 誤タップ用：1つ戻る（戻るときはアニメーションなし）
@@ -109,8 +114,9 @@ function back() {
   if (!started || pos.type === "intro") return;
   if (pos.type === "end") {
     pos = items.length ? lastPhaseOf(items.length - 1) : { type: "intro" };
-  } else if (pos.phase === 1) {
-    pos = { type: "item", index: pos.index, phase: 0 };
+  } else if (pos.phase > 0) {
+    // 同じ項目の1つ前の画面へ（1位発表 → 伏せた状態 → タイトルだけ）
+    pos = { type: "item", index: pos.index, phase: pos.phase - 1 };
   } else if (pos.index > 0) {
     pos = lastPhaseOf(pos.index - 1);
   } else {
@@ -161,8 +167,20 @@ function render(anim) {
 
   // ---- 項目の画面 ----
   const item = items[pos.index];
-  // 1位（pair は男女とも）を伏せているか？
-  const masked = modeOf(item) === "B" && pos.phase === 0;
+
+  // phase 0：タイトルだけを画面いっぱいに大きく表示
+  if (pos.phase === 0) {
+    stage.innerHTML = `
+      <div class="p-solo">
+        <div class="p-solo-cat">${item.category} — ${pos.index + 1} / ${items.length}</div>
+        <div class="p-solo-title">${item.title}</div>
+      </div>`;
+    $("#p-hint").textContent = "画面をタップして結果発表 ▶";
+    return;
+  }
+
+  // 1位（pair は男女とも）を伏せているか？（B の phase 1 のとき）
+  const masked = modeOf(item) === "B" && pos.phase === 1;
 
   let html = `<div class="p-award-label">${item.category} — ${pos.index + 1} / ${items.length}</div>`;
   html += `<div class="p-title">${item.title}</div>`;
