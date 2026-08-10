@@ -333,27 +333,34 @@ function buildPrintView() {
   let html = `<h1 class="pv-title">🏆 ${APP_TITLE} 結果発表</h1>`;
   html += `<p class="pv-date">${today}</p>`;
 
+  // 画面（LIVE表示）と同じ部品（.result-title / .rank-list / .rank）を
+  // そのまま使って組み立てる。だからPDFも画面と同じデザインになる
   awards.forEach((award) => {
     const rows = latest
       .filter((r) => r.award_id === award.id && r.points > 0)
       .sort((a, b) => b.points - a.points)
       .slice(0, RESULTS_TOP_N);
 
-    html += `<div class="pv-award"><h2 class="pv-award-title">${award.title}</h2>`;
+    const max = rows.length ? rows[0].points : 1;
+
+    html += `<div class="pv-award">`;
+    html += `<div class="result-title">${award.title}</div>`;
     if (!rows.length) {
       html += `<p class="pv-empty">投票はありませんでした</p>`;
     } else {
-      html += `<table class="pv-table">`;
+      html += `<div class="rank-list">`;
       rows.forEach((r, i) => {
         const name = participants.get(r.candidate_id) || "（不明）";
+        const pct = Math.round((r.points / (max || 1)) * 100);
         html += `
-          <tr class="pv-r${i + 1}">
-            <td class="pv-pos">${i + 1}位</td>
-            <td class="pv-name">${i === 0 ? "👑 " : ""}${name}</td>
-            <td class="pv-pts">${r.points} pt</td>
-          </tr>`;
+          <div class="rank r${i + 1}">
+            <div class="pos">${i + 1}</div>
+            <div class="name">${name}</div>
+            <div class="bar-wrap"><div class="bar" style="width:${pct}%"></div></div>
+            <div class="votes">${r.points}<span> pt</span></div>
+          </div>`;
       });
-      html += `</table>`;
+      html += `</div>`;
     }
     html += `</div>`;
   });

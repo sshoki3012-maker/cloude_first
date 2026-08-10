@@ -502,20 +502,28 @@ th, td { text-align: left; padding: 8px; border-bottom: 1px solid rgba(0,0,0,.12
   /* 印刷時は印刷用ビュー以外を全部隠す（ナビ・画面本体・紙吹雪など） */
   body > :not(#print-view) { display: none !important; }
   #print-view { display: block; }
-  body { background: #fff; }
 
-  .pv-title { font-size: 20pt; margin: 0 0 2pt; color: #1b1714; }
-  .pv-date { color: #666; font-size: 10pt; margin: 0 0 16pt; }
+  /* 画面の配色（ベージュ背景・オレンジのバーなど）をそのままPDFに残す。
+     この指定が無いと、ブラウザは印刷時に背景色を消してしまう */
+  * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  body { background: var(--bg); }
+  @page { margin: 12mm; }
+
+  .pv-title { font-size: 20pt; margin: 0 0 2pt; color: var(--text); }
+  .pv-date { color: var(--muted); font-size: 10pt; margin: 0 0 14pt; }
+  .pv-empty { color: var(--muted); font-size: 10pt; }
+
   /* お題のかたまりはページの途中で切れないようにする */
-  .pv-award { break-inside: avoid; page-break-inside: avoid; margin-bottom: 16pt; }
-  .pv-award-title {
-    font-size: 14pt; margin: 0 0 6pt; color: #1b1714;
-    border-left: 4pt solid #f26a1b; padding-left: 8pt;
-  }
-  .pv-table { width: 100%; border-collapse: collapse; }
-  .pv-table td { border-bottom: 0.5pt solid #ccc; padding: 5pt 6pt; font-size: 11pt; color: #1b1714; }
-  .pv-pos { width: 44pt; font-weight: 800; }
-  .pv-pts { width: 54pt; text-align: right; font-weight: 700; }
-  .pv-r1 td { font-size: 13pt; font-weight: 800; } /* 1位は少し大きく */
-  .pv-empty { color: #666; font-size: 10pt; }
+  .pv-award { break-inside: avoid; page-break-inside: avoid; margin-bottom: 18pt; }
+
+  /* 画面と同じ部品（result-title / rank）を、A4に収まるサイズに縮めて使う。
+     色・カード・バーのデザインは画面のスタイルをそのまま引き継ぐ */
+  #print-view .result-title { font-size: 15pt; margin: 0 0 8pt; }
+  #print-view .rank-list { gap: 6pt; }
+  #print-view .rank { padding: 7pt 11pt; gap: 10pt; border-radius: 9pt; }
+  #print-view .rank .pos { font-size: 13pt; width: 26pt; }
+  #print-view .rank .name { font-size: 12pt; }
+  #print-view .rank .bar-wrap { height: 7pt; }
+  #print-view .rank .votes { font-size: 12pt; width: 44pt; }
+  #print-view .rank .votes span { font-size: 8pt; }
 }
