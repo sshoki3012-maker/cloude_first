@@ -312,6 +312,60 @@ function renderPresentation(justIdx) {
   }
 }
 
+// =============================================================
+// PDF保存（印刷）
+// 「📄 PDF保存」を押すと、全お題の順位をまとめた印刷用レイアウトを作り、
+// ブラウザの印刷画面を開く。そこで「PDFとして保存」を選べばPDFになる。
+// 外部サービスを使わないので、スマホでもPCでも無料で動く。
+// =============================================================
+function buildPrintView() {
+  // 印刷用の入れ物（無ければ作る。CSSで普段は非表示、印刷時だけ表示）
+  let pv = document.getElementById("print-view");
+  if (!pv) {
+    pv = document.createElement("div");
+    pv.id = "print-view";
+    document.body.appendChild(pv);
+  }
+
+  const today = new Date().toLocaleDateString("ja-JP", {
+    year: "numeric", month: "long", day: "numeric",
+  });
+  let html = `<h1 class="pv-title">🏆 ${APP_TITLE} 結果発表</h1>`;
+  html += `<p class="pv-date">${today}</p>`;
+
+  awards.forEach((award) => {
+    const rows = latest
+      .filter((r) => r.award_id === award.id && r.points > 0)
+      .sort((a, b) => b.points - a.points)
+      .slice(0, RESULTS_TOP_N);
+
+    html += `<div class="pv-award"><h2 class="pv-award-title">${award.title}</h2>`;
+    if (!rows.length) {
+      html += `<p class="pv-empty">投票はありませんでした</p>`;
+    } else {
+      html += `<table class="pv-table">`;
+      rows.forEach((r, i) => {
+        const name = participants.get(r.candidate_id) || "（不明）";
+        html += `
+          <tr class="pv-r${i + 1}">
+            <td class="pv-pos">${i + 1}位</td>
+            <td class="pv-name">${i === 0 ? "👑 " : ""}${name}</td>
+            <td class="pv-pts">${r.points} pt</td>
+          </tr>`;
+      });
+      html += `</table>`;
+    }
+    html += `</div>`;
+  });
+  pv.innerHTML = html;
+}
+
+$("#print-btn").addEventListener("click", async () => {
+  await poll(); // 最新の集計にしてから
+  buildPrintView();
+  window.print(); // 印刷画面を開く（ここで「PDFとして保存」を選ぶ）
+});
+
 // ---- 発表モードの操作 ----
 $("#present-btn").addEventListener("click", startPresentation);
 $("#p-exit").addEventListener("click", exitPresentation);

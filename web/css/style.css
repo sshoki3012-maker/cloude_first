@@ -492,3 +492,30 @@ table { width: 100%; border-collapse: collapse; }
 th, td { text-align: left; padding: 8px; border-bottom: 1px solid rgba(0,0,0,.12); font-size: .9rem; }
 .list-item { display: flex; gap: 8px; align-items: center; padding: 8px 0; border-bottom: 1px solid rgba(0,0,0,.08); }
 .list-item input { flex: 1; }
+
+/* ===== PDF保存（印刷）用ビュー（results.html） =====
+   普段は非表示。「📄 PDF保存」ボタン → window.print() のときだけ、
+   このビューだけを白背景で表示して、きれいなPDFになるようにする */
+#print-view { display: none; }
+
+@media print {
+  /* 印刷時は印刷用ビュー以外を全部隠す（ナビ・画面本体・紙吹雪など） */
+  body > :not(#print-view) { display: none !important; }
+  #print-view { display: block; }
+  body { background: #fff; }
+
+  .pv-title { font-size: 20pt; margin: 0 0 2pt; color: #1b1714; }
+  .pv-date { color: #666; font-size: 10pt; margin: 0 0 16pt; }
+  /* お題のかたまりはページの途中で切れないようにする */
+  .pv-award { break-inside: avoid; page-break-inside: avoid; margin-bottom: 16pt; }
+  .pv-award-title {
+    font-size: 14pt; margin: 0 0 6pt; color: #1b1714;
+    border-left: 4pt solid #f26a1b; padding-left: 8pt;
+  }
+  .pv-table { width: 100%; border-collapse: collapse; }
+  .pv-table td { border-bottom: 0.5pt solid #ccc; padding: 5pt 6pt; font-size: 11pt; color: #1b1714; }
+  .pv-pos { width: 44pt; font-weight: 800; }
+  .pv-pts { width: 54pt; text-align: right; font-weight: 700; }
+  .pv-r1 td { font-size: 13pt; font-weight: 800; } /* 1位は少し大きく */
+  .pv-empty { color: #666; font-size: 10pt; }
+}
