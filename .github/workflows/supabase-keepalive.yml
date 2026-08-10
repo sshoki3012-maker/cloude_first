@@ -1,0 +1,61 @@
+# =============================================================
+# Supabase を眠らせないための定期アクセス（キープアライブ）
+#
+# Supabase の無料プランは「1週間アクセスなし」でプロジェクトが
+# 一時停止し、長く放置するとデータが消える恐れがある。
+# そこで GitHub Actions（GitHubの無料の定期実行機能）で
+# 週2回、データベースに軽い読み取りアクセスを送って起こし続ける。
+#
+# さらに GitHub 側にも「60日間リポジトリに動きがないと定期実行を
+# 止める」というルールがあるため、45日以上コミットが無いときは
+# 空のコミットを自動で入れて、定期実行そのものも維持する。
+# =============================================================
+name: Supabase keepalive
+
+on:
+  schedule:
+    # 毎週 月曜・木曜の 12:00（日本時間）に実行（UTCでは 3:00）
+    - cron: "0 3 * * 1,4"
+  # 手動でも実行できるようにしておく（Actions タブの Run workflow ボタン）
+  workflow_dispatch:
+
+permissions:
+  contents: write # 空コミットを push するために必要
+
+jobs:
+  keepalive:
+    runs-on: ubuntu-latest
+    steps:
+      - name: リポジトリを取得
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Supabase に読み取りアクセスして起こす
+        run: |
+          # 接続先とキーは web/config.js から読み取る（値の二重管理を避ける）
+          URL=$(grep -oP 'SUPABASE_URL\s*=\s*"\K[^"]+' web/config.js)
+          KEY=$(grep -oP 'SUPABASE_ANON_KEY\s*=\s*"\K[^"]+' web/config.js)
+          echo "ping: $URL"
+          # settings テーブルを1行だけ読む（これだけで「利用中」と見なされる）
+          curl -fsS "$URL/rest/v1/settings?select=event_id&limit=1" \
+            -H "apikey: $KEY" \
+            -H "Authorization: Bearer $KEY"
+          echo ""
+          echo "OK: Supabase は起きています"
+
+      - name: 45日以上コミットが無ければ空コミットで活動を維持
+        run: |
+          LAST=$(git log -1 --format=%ct)
+          NOW=$(date +%s)
+          DAYS=$(( (NOW - LAST) / 86400 ))
+          echo "最後のコミットから ${DAYS} 日"
+          if [ $DAYS -ge 45 ]; then
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git commit --allow-empty -m "keepalive: 定期実行を維持するための空コミット"
+            git push
+            echo "空コミットを push しました"
+          else
+            echo "まだ新しいのでコミット不要"
+          fi
