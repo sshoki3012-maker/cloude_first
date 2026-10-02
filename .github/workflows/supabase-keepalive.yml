@@ -1,10 +1,16 @@
 # =============================================================
 # Supabase を眠らせないための定期アクセス（キープアライブ）
 #
-# Supabase の無料プランは「1週間アクセスなし」でプロジェクトが
-# 一時停止し、長く放置するとデータが消える恐れがある。
-# そこで GitHub Actions（GitHubの無料の定期実行機能）で
-# 週2回、データベースに軽い読み取りアクセスを送って起こし続ける。
+# Supabase の無料プランは、しばらく使われていないと判断すると
+# プロジェクトを一時停止（pause）する。停止が長く続くと復元できなくなる。
+#
+# 2026年8月、週2回の「読み取りだけ」のアクセスでは停止を防げなかった。
+# そこで次のように強化した：
+#   1. 毎日アクセスする
+#   2. 読み取りではなく、keepalive テーブルに「最後にアクセスした時刻」を
+#      書き込む（実際にデータベースを使っている状態にする）
+#   3. 失敗したら GitHub の Issue を自動で作って知らせる
+#      （前回は失敗が6週間続いても気づけなかったため）
 #
 # さらに GitHub 側にも「60日間リポジトリに動きがないと定期実行を
 # 止める」というルールがあるため、45日以上コミットが無いときは
@@ -12,16 +18,17 @@
 # =============================================================
 name: Supabase keepalive
 
-# 再プッシュでGitHubにワークフローを認識させるための更新
 on:
   schedule:
-    # 毎週 月曜・木曜の 12:00（日本時間）に実行（UTCでは 3:00）
-    - cron: "0 3 * * 1,4"
+    # 毎日 12:00（日本時間）に実行（UTCでは 3:00）
+    # ※ GitHub が混んでいると数時間遅れることがあるが、問題はない
+    - cron: "0 3 * * *"
   # 手動でも実行できるようにしておく（Actions タブの Run workflow ボタン）
   workflow_dispatch:
 
 permissions:
   contents: write # 空コミットを push するために必要
+  issues: write   # 失敗したときに Issue を作るために必要
 
 jobs:
   keepalive:
@@ -32,20 +39,26 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Supabase に読み取りアクセスして起こす
+      - name: Supabase に書き込みアクセスして起こす
         run: |
           # 接続先とキーは web/config.js から読み取る（値の二重管理を避ける）
           URL=$(grep -oP 'SUPABASE_URL\s*=\s*"\K[^"]+' web/config.js)
           KEY=$(grep -oP 'SUPABASE_ANON_KEY\s*=\s*"\K[^"]+' web/config.js)
-          echo "ping: $URL"
-          # settings テーブルを1行だけ読む（これだけで「利用中」と見なされる）
-          curl -fsS "$URL/rest/v1/settings?select=event_id&limit=1" \
+          NOW=$(date -u +%Y-%m-%dT%H:%M:%SZ)
+          echo "ping: $URL ($NOW)"
+          # keepalive テーブルの id=1 の行に、今の時刻を書き込む
+          # （行が無ければ作り、あれば上書きする＝upsert）
+          curl -fsS -X POST "$URL/rest/v1/keepalive" \
             -H "apikey: $KEY" \
-            -H "Authorization: Bearer $KEY"
-          echo ""
-          echo "OK: Supabase は起きています"
+            -H "Authorization: Bearer $KEY" \
+            -H "Content-Type: application/json" \
+            -H "Prefer: resolution=merge-duplicates,return=minimal" \
+            -d "{\"id\":1,\"pinged_at\":\"$NOW\"}"
+          echo "OK: Supabase に書き込みました（起きています）"
 
       - name: 45日以上コミットが無ければ空コミットで活動を維持
+        # 上のアクセスが失敗しても、定期実行そのものは止めたくないので必ず実行する
+        if: always()
         run: |
           LAST=$(git log -1 --format=%ct)
           NOW=$(date +%s)
@@ -59,4 +72,31 @@ jobs:
             echo "空コミットを push しました"
           else
             echo "まだ新しいのでコミット不要"
+          fi
+
+      - name: 失敗したら Issue を作ってお知らせ
+        # どれかのステップが失敗したときだけ実行される
+        if: failure()
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          TITLE="⚠️ Supabase キープアライブが失敗しました"
+          # 同じお知らせがすでに開いていれば、新しく作らずにコメントだけ足す（毎日増えないように）
+          NUM=$(gh issue list --state open --search "\"$TITLE\" in:title" --json number --jq '.[0].number // empty')
+          if [ -n "$NUM" ]; then
+            gh issue comment "$NUM" --body "今日も失敗しました: $RUN_URL"
+          else
+            gh issue create --title "$TITLE" --body "Supabase への自動アクセスが失敗しました。
+
+          **プロジェクトが一時停止（Paused）している可能性があります。**
+          停止から約90日を過ぎると復元できなくなるので、早めに確認してください。
+
+          ### 確認すること
+          1. https://supabase.com/dashboard/projects を開く
+          2. プロジェクトに「Project is paused」と出ていたら、クリックして「Restore project」を押す
+          3. 復元が終わったら、このリポジトリの Actions タブ →「Supabase keepalive」→「Run workflow」で再実行する
+          4. 緑のチェックになったら、この Issue を閉じる（Close issue）
+
+          失敗した実行の記録: $RUN_URL"
           fi

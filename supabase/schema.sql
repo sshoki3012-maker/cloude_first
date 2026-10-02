@@ -129,3 +129,19 @@ create policy "write memory_settings" on memory_settings for all using (true) wi
 -- 初期行（EVENT_ID は config.js と合わせること）
 insert into memory_settings (event_id) values ('2026')
 on conflict (event_id) do nothing;
+
+-- =============================================================
+-- キープアライブ用（.github/workflows/supabase-keepalive.yml が毎日書き込む）
+--   Supabase 無料プランの自動停止を防ぐため、最後にアクセスした時刻を1行だけ持つ
+-- =============================================================
+create table if not exists keepalive (
+  id        int primary key,
+  pinged_at timestamptz not null default now()
+);
+
+alter table keepalive enable row level security;
+
+create policy "write keepalive" on keepalive for all using (true) with check (true);
+
+insert into keepalive (id) values (1)
+on conflict (id) do nothing;
